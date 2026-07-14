@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "prisma generate && prisma db push && next build",
+    "build": "prisma generate && node scripts/ensure-db-migrations.mjs && prisma db push && next build",
     "build:full": "prisma generate && next build",
     "start": "next start",
     "scrape": "python scrape_architects.py",
