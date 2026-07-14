@@ -69,7 +69,7 @@ export async function ingestWebsiteEnquiry(input: WebsiteEnquiryInput) {
   const contactPerson = input.type === "quote" ? input.name.trim() : input.name.trim();
   const address =
     input.type === "quote"
-      ? [input.projectLocation, input.region].filter(Boolean).join(" ù ")
+      ? [input.projectLocation, input.region].filter(Boolean).join(" | ")
       : undefined;
   const phone = input.type === "quote" ? input.phone?.trim() : undefined;
 
