@@ -1,4 +1,4 @@
-/** Fixed hex scale for project urgency by days until due (Blocharch palette). */
+/** Fixed hex scale for project urgency by days until due (Dimension Group palette). */
 export function projectDueColor(daysUntilDue: number | null): string {
   if (daysUntilDue == null) return "#64748b";
   if (daysUntilDue < 0) return "#ef4444";

@@ -111,11 +111,11 @@ function smtpSendTest() {
                         const body = [
                           `From: ${USER}`,
                           `To: ${TO}`,
-                          `Subject: Blocharch SMTP test ${new Date().toISOString()}`,
+                          `Subject: Dimension Group SMTP test ${new Date().toISOString()}`,
                           "MIME-Version: 1.0",
                           "Content-Type: text/plain; charset=utf-8",
                           "",
-                          "This is an automated SMTP connectivity test from the Blocharch dashboard setup.",
+                          "This is an automated SMTP connectivity test from the Dimension Group dashboard setup.",
                           "",
                           `Sent at: ${new Date().toISOString()}`,
                           ".",

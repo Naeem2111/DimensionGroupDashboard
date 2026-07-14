@@ -121,8 +121,8 @@ async function seedUsers() {
     await prisma.user.deleteMany();
     await prisma.user.create({
       data: {
-        username: "blocharch",
-        passwordHash: hashPassword("blocharch"),
+        username: "admin",
+        passwordHash: hashPassword("changeme"),
         role: "admin",
         disabled: false,
       },
@@ -179,7 +179,7 @@ async function seedOpsDemo() {
         fullName: "Athlete 01",
         athleteCode: "ATH-01",
         email: "athlete01@example.com",
-        blocharchStartDate: new Date("2025-01-01"),
+        memberStartDate: new Date("2025-01-01"),
         baseMonthlyPayZar: 20000,
         monthlyHourCap: 160,
         overtimeRateZar: 200,

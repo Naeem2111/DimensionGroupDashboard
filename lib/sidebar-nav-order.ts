@@ -5,7 +5,7 @@ export type SidebarNavOrder = {
   collapsedSections?: string[];
 };
 
-const STORAGE_PREFIX = "blocharch.sidebar-order.v1:";
+const STORAGE_PREFIX = "dg.sidebar-order.v1:";
 
 export function sidebarNavStorageKey(userId: string): string {
   return `${STORAGE_PREFIX}${userId}`;

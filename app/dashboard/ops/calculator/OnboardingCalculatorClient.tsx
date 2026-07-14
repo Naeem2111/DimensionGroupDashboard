@@ -6,7 +6,7 @@ import {
   SALES_CALCULATOR_TIER_DEFAULT,
   SALES_CALCULATOR_TIER_MAX,
   SALES_CALCULATOR_TIER_MIN,
-  blocharchMonthlyFeeGbp,
+  monthlyServiceFeeGbp,
   formatGbp,
   monthlySavingGbp,
 } from "@/lib/ops-sales-calculator";
@@ -22,14 +22,14 @@ export function OnboardingCalculatorClient() {
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
   }, [benchmarkInput]);
 
-  const blocharchFee = useMemo(
-    () => blocharchMonthlyFeeGbp(benchmarkFee, savingPercent),
+  const serviceFee = useMemo(
+    () => monthlyServiceFeeGbp(benchmarkFee, savingPercent),
     [benchmarkFee, savingPercent]
   );
 
   const monthlySaving = useMemo(
-    () => monthlySavingGbp(benchmarkFee, blocharchFee),
-    [benchmarkFee, blocharchFee]
+    () => monthlySavingGbp(benchmarkFee, serviceFee),
+    [benchmarkFee, serviceFee]
   );
 
   const hasBenchmark = benchmarkFee > 0;
@@ -40,7 +40,7 @@ export function OnboardingCalculatorClient() {
         <h2 className="text-sm font-semibold text-white">Sales call calculator</h2>
         <p className="mt-1 text-xs text-slate-500">
           Enter the client&apos;s current monthly cost, then adjust the cost-saving tier to quote the
-          BLOCHARCH monthly fee live on the call.
+          Dimension Group monthly fee live on the call.
         </p>
 
         <label className="mt-6 block text-xs text-slate-400">
@@ -104,10 +104,10 @@ export function OnboardingCalculatorClient() {
         }`}
       >
         <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-          BLOCHARCH monthly fee
+          Dimension Group monthly fee
         </p>
         <p className="mt-2 text-4xl font-semibold tabular-nums text-white">
-          {hasBenchmark ? formatGbp(blocharchFee) : "—"}
+          {hasBenchmark ? formatGbp(serviceFee) : "—"}
         </p>
         {hasBenchmark ? (
           <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-white/[0.06] pt-4 text-sm">
@@ -122,7 +122,7 @@ export function OnboardingCalculatorClient() {
             <div className="col-span-2">
               <dt className="text-xs text-slate-500">Formula</dt>
               <dd className="text-xs text-slate-400">
-                {formatGbp(benchmarkFee)} × (1 − {savingPercent}%) = {formatGbp(blocharchFee)}
+                {formatGbp(benchmarkFee)} × (1 − {savingPercent}%) = {formatGbp(serviceFee)}
               </dd>
             </div>
           </dl>

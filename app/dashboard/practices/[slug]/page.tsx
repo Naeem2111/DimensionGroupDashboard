@@ -153,7 +153,7 @@ export default async function PracticeDetailPage({
               Source
             </p>
             {isManualPracticeUrl(practice.url) ? (
-              <p className="text-slate-400 text-sm">Added manually to Blocharch</p>
+              <p className="text-slate-400 text-sm">Added manually to Dimension Group</p>
             ) : (
               <a
                 href={practice.url}

@@ -37,7 +37,7 @@ export async function GET(request: NextRequest, context: Ctx) {
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Blocharch//Project planner//EN",
+    "PRODID:-//Dimension Group//Project planner//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     `X-WR-CALNAME:${icsEscape(board.title)}`,

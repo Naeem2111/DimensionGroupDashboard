@@ -48,9 +48,9 @@ export async function POST(request: NextRequest) {
   if (!(await canViewBoard(user, sourceBoard.id))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  if (sourceBoard.kind !== "blocharch_inbox") {
+  if (sourceBoard.kind !== "system_inbox") {
     return NextResponse.json(
-      { error: "Only tasks in Blocharch Inbox can be routed to another board here" },
+      { error: "Only tasks in Team Inbox can be routed to another board here" },
       { status: 400 }
     );
   }
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     select: { id: true, kind: true },
   });
   if (!targetBoard) return NextResponse.json({ error: "Target board not found" }, { status: 404 });
-  if (targetBoard.kind === "blocharch_inbox" || targetBoard.kind === "blocharch_outbox") {
+  if (targetBoard.kind === "system_inbox" || targetBoard.kind === "system_outbox") {
     return NextResponse.json({ error: "Invalid target board" }, { status: 400 });
   }
 

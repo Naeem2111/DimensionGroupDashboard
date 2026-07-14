@@ -61,7 +61,7 @@ async function main() {
           fullName: "Athlete 01",
           athleteCode: "ATH-01",
           email: "athlete01@example.com",
-          blocharchStartDate: new Date("2025-01-01"),
+          memberStartDate: new Date("2025-01-01"),
         },
       });
     }

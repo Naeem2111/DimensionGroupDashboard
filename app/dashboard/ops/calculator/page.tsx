@@ -6,7 +6,7 @@ export default function OpsCalculatorPage() {
     <>
       <PageHeader
         title="Sales calculator"
-        description="Quote the BLOCHARCH monthly fee during sales calls from the client's benchmark cost and agreed cost-saving percentage."
+        description="Quote the Dimension Group monthly fee during sales calls from the client's benchmark cost and agreed cost-saving percentage."
         className="mb-8"
       />
       <OnboardingCalculatorClient />

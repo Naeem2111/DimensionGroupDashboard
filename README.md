@@ -1,6 +1,6 @@
 # Dimension Group Dashboard
 
-Marketing lead console for [Dimension Group](https://dimensiongroupglobal.com/). Built from the Blocharch stack: **Next.js 14**, **Prisma**, **Postgres**, hosted on **Vercel** (same pattern as Blocharch).
+Marketing lead console for [Dimension Group](https://dimensiongroupglobal.com/). Built with **Next.js 14**, **Prisma**, and **Postgres**, hosted on **Vercel**.
 
 ## Features
 

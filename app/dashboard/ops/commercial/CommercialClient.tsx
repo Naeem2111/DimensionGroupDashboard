@@ -456,7 +456,7 @@ export function CommercialClient() {
               <p className="mt-1 text-xs text-slate-500">
                 {clientId
                   ? "Per-athlete hours, revenue, and margin for the selected client."
-                  : "Per-athlete earnings, revenue produced, and Blocharch margin for the month."}
+                  : "Per-athlete earnings, revenue produced, and Dimension Group margin for the month."}
               </p>
             </div>
             <table className="min-w-full text-left text-sm">

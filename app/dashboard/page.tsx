@@ -23,7 +23,7 @@ export default async function DashboardPage() {
       <PageHeader
         title="Overview"
         badge="Live"
-        description="Blocharch marketing dashboard — architect directory and outreach pipeline backed by your database."
+        description="Dimension Group marketing dashboard — architect directory and outreach pipeline backed by your database."
       />
       <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="card-tool rounded-2xl p-5">

@@ -5,7 +5,7 @@
  * 2. Set RESTORE_DATABASE_URL to that branch; keep DATABASE_URL as production.
  * 3. Run:
  *      node scripts/restore-planner-from-neon-pitr.mjs --confirm
- *      node scripts/restore-planner-from-neon-pitr.mjs --confirm --owner=jethro@blocharch.com
+ *      node scripts/restore-planner-from-neon-pitr.mjs --confirm --owner=info@dimensiongroupglobal.com
  */
 import { PrismaClient } from "@prisma/client";
 
@@ -38,7 +38,7 @@ function userExistsOnLive(userId, restoreNames, liveNames) {
 async function main() {
   if (!process.argv.includes("--confirm")) {
     console.error("Refusing without --confirm");
-    console.error("Example: node scripts/restore-planner-from-neon-pitr.mjs --confirm --owner=jethro@blocharch.com");
+    console.error("Example: node scripts/restore-planner-from-neon-pitr.mjs --confirm --owner=info@dimensiongroupglobal.com");
     process.exit(1);
   }
 

@@ -1,6 +1,6 @@
 # n8n Lead Outreach – Visual Flow
 
-**Workflow name:** Blocharch Lead Outreach – Email Automation
+**Workflow name:** Dimension Group Lead Outreach – Email Automation
 
 ---
 
@@ -109,5 +109,5 @@ flowchart LR
 ## Env / config
 
 - **DASHBOARD_URL** – Base URL of your dashboard (e.g. `https://yourapp.vercel.app`). Used in “Fetch leads from dashboard”.
-- **FROM_EMAIL** – Sender address (default in workflow: `jethro@blocharch.com`).
-- **Gmail OAuth2** – Create one Gmail OAuth2 credential (jethro@blocharch.com) and assign it to all four Send nodes.
+- **FROM_EMAIL** – Sender address (default in workflow: `info@dimensiongroupglobal.com`).
+- **Gmail OAuth2** – Create one Gmail OAuth2 credential (info@dimensiongroupglobal.com) and assign it to all four Send nodes.

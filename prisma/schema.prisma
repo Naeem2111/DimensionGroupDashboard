@@ -57,8 +57,8 @@ enum PlannerBoardScope {
 /** Fixed system boards vs user-created boards (see lib/planner-system-boards.ts). */
 enum PlannerBoardKind {
   custom
-  blocharch_outbox
-  blocharch_inbox
+  system_outbox
+  system_inbox
   my_tasks
   completed
   project
@@ -427,7 +427,7 @@ model OpsAthlete {
   baseMonthlyPayZar Decimal         @default(20000) @map("base_monthly_pay_zar") @db.Decimal(12, 2)
   monthlyHourCap   Int              @default(160) @map("monthly_hour_cap")
   overtimeRateZar  Decimal          @default(200) @map("overtime_rate_zar") @db.Decimal(10, 2)
-  blocharchStartDate DateTime       @map("blocharch_start_date") @db.Date
+  memberStartDate DateTime       @map("member_start_date") @db.Date
   status           OpsAthleteStatus @default(active)
   /** Direct link to profile photo (http/https or /uploads/…). */
   profilePhotoUrl      String?          @map("profile_photo_url")
@@ -548,7 +548,7 @@ enum OpsOutboxPriority {
   urgent
 }
 
-/** Admin Blocharch Outbox assignments → athlete Blocharch Inbox. */
+/** Admin Team Outbox assignments → athlete Team Inbox. */
 model OpsOutboxTask {
   id              String            @id @default(uuid())
   createdByUserId String            @map("created_by_user_id")

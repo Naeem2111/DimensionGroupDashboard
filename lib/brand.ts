@@ -1,6 +1,5 @@
 /** Dimension Group brand assets in /public/brand */
-export const BLOCHARCH_SITE = "https://dimensiongroupglobal.com/" as const;
-export const DIMENSION_GROUP_SITE = BLOCHARCH_SITE;
+export const DIMENSION_GROUP_SITE = "https://dimensiongroupglobal.com/" as const;
 
 export const brandAssets = {
   logo: "/brand/dimension-group-logo.png",

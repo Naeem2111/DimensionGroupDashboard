@@ -1,6 +1,6 @@
 # n8n Lead Outreach – Email Automation
 
-This workflow automates the Blocharch email sequence using your scraped architect data and the templates you provided.
+This workflow automates the Dimension Group email sequence using your scraped architect data and the templates you provided.
 
 ## Flow
 
@@ -26,7 +26,7 @@ Routing is done by **outreach_stage** on each lead. The dashboard API maps pipel
 
 1. In n8n: **Workflows** → **Import from File** (or **Import from URL** if you host the JSON).
 2. Select `n8n-lead-outreach-workflow.json` from this folder.
-3. Configure the **Gmail** nodes (all four): create a **Gmail OAuth2** credential for jethro@blocharch.com and assign it to each Send Cold Email, Send Book Call Email, Send Thank You Email, and Send Follow-Up Email node.
+3. Configure the **Gmail** nodes (all four): create a **Gmail OAuth2** credential for info@dimensiongroupglobal.com and assign it to each Send Cold Email, Send Book Call Email, Send Thank You Email, and Send Follow-Up Email node.
 
 ## Where leads come from
 
@@ -55,9 +55,9 @@ The workflow fills these from each lead:
 
 - **{{ firstName }}** – First word of contact name or practice name.
 - **{{ companyName }}** – Practice name.
-- **{{ website }}** / **{{ websiteLink }}** – Practice website, or Blocharch’s if missing.
+- **{{ website }}** / **{{ websiteLink }}** – Practice website, or Dimension Group’s if missing.
 
-Set **FROM_EMAIL** in n8n (e.g. `jethro@blocharch.com`) or it will use the default in the node.
+Set **FROM_EMAIL** in n8n (e.g. `info@dimensiongroupglobal.com`) or it will use the default in the node.
 
 ## Running the workflow
 

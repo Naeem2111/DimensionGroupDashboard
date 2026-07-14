@@ -41,7 +41,7 @@ export async function ensureLinkedAthleteProfile(user: SessionUser): Promise<Ops
         userId: user.id,
         fullName,
         athleteCode,
-        blocharchStartDate: new Date(),
+        memberStartDate: new Date(),
         status: "active",
       },
     });

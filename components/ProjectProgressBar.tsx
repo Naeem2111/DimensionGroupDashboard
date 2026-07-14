@@ -1,6 +1,6 @@
 "use client";
 
-/** Muted progress bar per V2 spec: grey → red → orange → yellow → green → Blocharch blue @ 100%. */
+/** Muted progress bar per V2 spec: grey → red → orange → yellow → green → Dimension Group blue @ 100%. */
 export function progressBarColor(percent: number): string {
   const p = Math.max(0, Math.min(100, percent));
   if (p === 0) return "rgb(100 116 139 / 0.35)";

@@ -1,10 +1,10 @@
 import type { UserRole } from "@/lib/user-role";
 
-/** Feature areas within the single Blocharch console domain. */
+/** Feature areas within the single Dimension Group console domain. */
 export type AppModule = "marketing" | "planner" | "admin" | "ops" | "athlete_portal";
 
 const MODULE_ROLES: Record<AppModule, readonly UserRole[]> = {
-  /** Lead directory, map, outreach — internal Blocharch staff only. */
+  /** Lead directory, map, outreach — internal Dimension Group staff only. */
   marketing: ["admin", "manager"],
   /** Kanban / project boards — all signed-in users. */
   planner: ["admin", "manager", "user"],

@@ -6,7 +6,7 @@ export default function AthleteNotificationsPage() {
     <div>
       <PageHeader
         title="My notifications"
-        description="Check-in updates, new assigned tasks, and project messages from Blocharch."
+        description="Check-in updates, new assigned tasks, and project messages from Dimension Group."
       />
       <AthleteNotificationsClient />
     </div>

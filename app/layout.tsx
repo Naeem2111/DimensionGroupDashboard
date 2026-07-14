@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { brandAssets } from "@/lib/blocharch-brand";
+import { brandAssets } from "@/lib/brand";
 import { cookies } from "next/headers";
 import { DEFAULT_THEME, THEME_COOKIE, normalizeTheme } from "@/lib/theme";
 import "./globals.css";

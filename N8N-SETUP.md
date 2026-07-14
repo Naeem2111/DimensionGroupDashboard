@@ -110,7 +110,7 @@ Alternatively use **Gmail OAuth2** if you prefer.
 
 ## 6. Configure FROM_EMAIL (optional)
 
-Set **FROM_EMAIL** in n8n (e.g. `jethro@blocharch.com`) or it uses the default in the node.
+Set **FROM_EMAIL** in n8n (e.g. `info@dimensiongroupglobal.com`) or it uses the default in the node.
 
 ## 7. Run the workflow
 

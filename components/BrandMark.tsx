@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { brandAssets } from "@/lib/blocharch-brand";
+import { brandAssets } from "@/lib/brand";
 
 type Props = {
   className?: string;
@@ -9,7 +9,7 @@ type Props = {
   variant?: "row" | "stack";
 };
 
-/** Blocharch logo + Console label. */
+/** Dimension Group logo + Console label. */
 export function BrandMark({ className = "", compact = false, variant = "row" }: Props) {
   const stack = variant === "stack";
 

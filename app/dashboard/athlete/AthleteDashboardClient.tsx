@@ -19,7 +19,7 @@ type DashboardData = {
     profilePhotoUrl: string | null;
     profilePhotoBgColor: string | null;
     profilePhotoTextTone: string | null;
-    blocharchStartDate: string;
+    memberStartDate: string;
     monthlyHourCap: number;
   };
   summary: {
@@ -147,7 +147,7 @@ export function AthleteDashboardClient() {
               <p className="text-sm text-slate-300">
                 {profile.fullName} · {profile.athleteCode}
               </p>
-              <p className="text-xs text-slate-500">Started {profile.blocharchStartDate}</p>
+              <p className="text-xs text-slate-500">Started {profile.memberStartDate}</p>
             </div>
           </div>
         </div>

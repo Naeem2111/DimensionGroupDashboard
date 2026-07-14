@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       baseMonthlyPayZar: Number(a.baseMonthlyPayZar),
       monthlyHourCap: a.monthlyHourCap,
       overtimeRateZar: Number(a.overtimeRateZar),
-      blocharchStartDate: a.blocharchStartDate.toISOString().slice(0, 10),
+      memberStartDate: a.memberStartDate.toISOString().slice(0, 10),
       profilePhotoUrl: a.profilePhotoUrl,
       profilePhotoBgColor: a.profilePhotoBgColor,
       profilePhotoTextTone: a.profilePhotoTextTone,
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const athleteCode = String(body.athleteCode || "").trim().toUpperCase();
     const username = String(body.username || "").trim().toLowerCase();
     const password = String(body.password || "").trim();
-    const startRaw = String(body.blocharchStartDate || "").trim();
+    const startRaw = String(body.memberStartDate || "").trim();
     const startDate = parseDateOnly(startRaw) ?? new Date();
 
     if (fullName.length < 2) {
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
           athleteCode,
           email: body.email ? String(body.email).trim() : null,
           phone: body.phone ? String(body.phone).trim() : null,
-          blocharchStartDate: startDate,
+          memberStartDate: startDate,
           baseMonthlyPayZar: body.baseMonthlyPayZar ?? 20000,
           monthlyHourCap: body.monthlyHourCap ?? 160,
           overtimeRateZar: body.overtimeRateZar ?? 200,

@@ -58,11 +58,11 @@ PLANNER,Remove fixed Completed board tab,AUDIT,Done,completed kind filtered from
 PLANNER,Board reorder (movable boards),AUDIT,Done,sortOrder + arrows; project boards movable.
 PLANNER,Default columns General + 5 label columns + Done,AUDIT,Done,planner-default-columns.ts; linkedLabelName on create; backfill on board load.
 PLANNER,Light theme tab and button legibility,AUDIT,Done,planner-tab-selected + btn-brand-primary light overrides.
-OUTBOX,Blocharch Outbox assignment fields,AUDIT,Done,Athlete/project/title/description/due/notes working.
+OUTBOX,Team Outbox assignment fields,AUDIT,Done,Athlete/project/title/description/due/notes working.
 OUTBOX,Priority → approved label field on assign,AUDIT,Done,Label dropdown replaces priority on outbox form.
 OUTBOX,Athlete notification + red badges on assign,AUDIT,Done,Notification + inbox badge + pulse on planner nav.
-OUTBOX,Inbox single receiving column,AUDIT,Done,Inbox board uses single Blocharch Inbox/backlog receiving column.
-OUTBOX,Inbox move-not-copy to athlete board,AUDIT,Done,move-to-board API moves from blocharch_inbox with label-column placement.
+OUTBOX,Inbox single receiving column,AUDIT,Done,Inbox board uses single Team Inbox/backlog receiving column.
+OUTBOX,Inbox move-not-copy to athlete board,AUDIT,Done,move-to-board API moves from system_inbox with label-column placement.
 OUTBOX,Athlete dropdown to move task to another board,AUDIT,Done,Move to board… button + modal on inbox task cards.
 ONBOARDING,Clients — layout,AUDIT,Done,Client manager approved.
 ONBOARDING,Clients — logo upload (512px circular 32–40px display),AUDIT,Done,Upload on create + edit in OpsClientsClient; shown in Commercial.
@@ -87,7 +87,7 @@ ATHLETE,Daily Log — Other task type requires explanation,AUDIT,Done,Required O
 ATHLETE,My Projects cards & due-date calendar,AUDIT,Done,Colour scale + calendar + progress bar implemented.
 ATHLETE,Completed Projects at 100% progress,AUDIT,Done,Daily log sync sets completed at 100% and moves to Completed Projects.
 ATHLETE,Completed Projects — reversible (back to My Projects),AUDIT,Done,Still in progress checkbox reactivates to in_progress at 90% + restores project board.
-ATHLETE,Notifications → deep link to Blocharch Inbox task,AUDIT,Done,linkPath uses athlete=me; opening task marks notification read.
+ATHLETE,Notifications → deep link to Team Inbox task,AUDIT,Done,linkPath uses athlete=me; opening task marks notification read.
 ATHLETE,Inbox flash/highlight on new assignment,AUDIT,Done,Sidebar pulse + inbox board tab badge/pulse in planner.
 ATHLETE,Simplify athlete sidebar (single My Workspace; no duplicate Planner section),AUDIT,Done,Planner section hidden for athlete role; sub-nav uses team inbox link.
 PLATFORM,Mobile-friendly console (collapsible sidebar),AUDIT,Done,DashboardShell + drawer nav shipped f6ffcad.

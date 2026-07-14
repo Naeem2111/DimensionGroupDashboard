@@ -66,8 +66,8 @@ export async function loadCheckInRequest(id: string) {
 
 function eventTitle(athleteName: string, projectName: string | null): string {
   return projectName
-    ? `Blocharch check-in: ${athleteName} — ${projectName}`
-    : `Blocharch check-in: ${athleteName}`;
+    ? `Dimension Group check-in: ${athleteName} — ${projectName}`
+    : `Dimension Group check-in: ${athleteName}`;
 }
 
 function eventDescription(row: {

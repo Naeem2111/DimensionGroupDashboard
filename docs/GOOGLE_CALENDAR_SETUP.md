@@ -5,7 +5,7 @@ The console uses **Google Calendar API** with a long-lived **refresh token** so 
 ## 1. Google Cloud project
 
 1. Open [Google Cloud Console](https://console.cloud.google.com/).
-2. Create or select a project (e.g. `Blocharch Console`).
+2. Create or select a project (e.g. `Dimension Group Console`).
 3. **APIs & Services → Library** → enable **Google Calendar API**.
 
 ## 2. OAuth consent screen

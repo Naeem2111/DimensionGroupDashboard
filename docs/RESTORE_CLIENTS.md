@@ -6,7 +6,7 @@ The wipe script removed **2 clients** (and linked commercial profiles) from Neon
 
 Neon keeps history you can branch from.
 
-1. Open [Neon Console](https://console.neon.tech) → your Blocharch project.
+1. Open [Neon Console](https://console.neon.tech) → your Dimension Group project.
 2. **Branches** → **Create branch** → **Point in time**.
 3. Pick a timestamp **before** the wipe (e.g. a few hours earlier on the day you ran `wipe-db-keep-admins.mjs`).
 4. Copy the new branch **connection string**.

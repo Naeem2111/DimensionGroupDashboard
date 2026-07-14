@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { BrandMark } from "@/components/BrandMark";
 import { LogoutButton } from "@/components/LogoutButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { BLOCHARCH_SITE } from "@/lib/blocharch-brand";
+import { DIMENSION_GROUP_SITE } from "@/lib/brand";
 import type { SessionUser } from "@/lib/auth";
 import { canAccessModule, canAccessOpsOverview, type AppModule } from "@/lib/permissions";
 import {
@@ -710,7 +710,7 @@ export function DashboardSidebar({
           Dimension Group — marketing leads, outreach, and notifications.
         </p>
         <a
-          href={BLOCHARCH_SITE}
+          href={DIMENSION_GROUP_SITE}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-brand-400/90 hover:text-brand-300"

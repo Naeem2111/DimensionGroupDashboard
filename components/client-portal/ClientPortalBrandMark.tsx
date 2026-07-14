@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { brandAssets } from "@/lib/blocharch-brand";
+import { brandAssets } from "@/lib/brand";
 import {
   DEFAULT_THEME,
   type ThemePreference,
@@ -16,7 +16,7 @@ function readThemeFromDom(): ThemePreference {
   return normalizeTheme(document.documentElement.dataset.theme);
 }
 
-/** Blocharch logo for the public client portal (no Console label). */
+/** Dimension Group logo for the public client portal (no Console label). */
 export function ClientPortalBrandMark({ className = "" }: { className?: string }) {
   const [theme, setTheme] = useState<ThemePreference>(DEFAULT_THEME);
 
@@ -36,14 +36,14 @@ export function ClientPortalBrandMark({ className = "" }: { className?: string }
 
   return (
     <Link
-      href="https://www.blocharch.com/"
+      href="https://dimensiongroupglobal.com/"
       target="_blank"
       rel="noopener noreferrer"
       className={`inline-flex rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-brand-500/60 ${className}`}
     >
       <Image
         src={logoSrc}
-        alt="Blocharch"
+        alt="Dimension Group"
         width={200}
         height={64}
         priority

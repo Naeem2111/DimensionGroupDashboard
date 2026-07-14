@@ -29,7 +29,7 @@ function buildInboxDescription(input: {
     meta.push(`Attachments: ${JSON.stringify(input.attachments)}`);
   }
   if (meta.length) parts.push(meta.join("\n"));
-  return parts.join("\n\n") || "Assigned from Blocharch Outbox";
+  return parts.join("\n\n") || "Assigned from Team Outbox";
 }
 
 async function attachLabelToTask(boardId: string, taskId: string, labelName: string | null) {
@@ -50,7 +50,7 @@ async function attachLabelToTask(boardId: string, taskId: string, labelName: str
   }
 }
 
-/** Creates a card on the athlete Blocharch Inbox and marks the outbox row delivered. */
+/** Creates a card on the athlete Team Inbox and marks the outbox row delivered. */
 export async function deliverOutboxTaskToInbox(outboxTaskId: string) {
   const row = await prisma.opsOutboxTask.findUnique({
     where: { id: outboxTaskId },
@@ -81,7 +81,7 @@ export async function deliverOutboxTaskToInbox(outboxTaskId: string) {
   await ensureAthleteSystemBoards(athlete.id, athlete.userId);
 
   const inboxBoard = await prisma.plannerBoard.findFirst({
-    where: { athleteId: athlete.id, kind: "blocharch_inbox" },
+    where: { athleteId: athlete.id, kind: "system_inbox" },
     select: { id: true },
   });
   if (!inboxBoard) throw new Error("Athlete Inbox board missing");
@@ -119,7 +119,7 @@ export async function deliverOutboxTaskToInbox(outboxTaskId: string) {
       dueAt: row.dueAt,
       customFields: {
         outboxTaskId: row.id,
-        source: "blocharch_outbox",
+        source: "system_outbox",
         labelName: row.labelName,
       },
     },
@@ -142,7 +142,7 @@ export async function deliverOutboxTaskToInbox(outboxTaskId: string) {
     athleteId: athlete.id,
     type: "task_assigned",
     title: title,
-    message: row.project?.name ? `Project: ${row.project.name}` : "New work in your Blocharch Inbox",
+    message: row.project?.name ? `Project: ${row.project.name}` : "New work in your Team Inbox",
     linkPath: `/dashboard/planner?area=team&athlete=me&board=${inboxBoard.id}&task=${task.id}`,
   }).catch(() => {});
 

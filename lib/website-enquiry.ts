@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { createOutreachLog } from "@/lib/lead-outreach";
 import { getLead, updateLead } from "@/lib/leads";
 import { prisma } from "@/lib/prisma";
-import { DIMENSION_GROUP_SITE } from "@/lib/blocharch-brand";
+import { DIMENSION_GROUP_SITE } from "@/lib/brand";
 import { isValidEmail } from "@/lib/practice-url";
 
 export type QuoteEnquiryInput = {

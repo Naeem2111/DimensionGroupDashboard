@@ -29,7 +29,7 @@ const LeafletMap = dynamic(async () => (await import("@/components/LeafletMap"))
 
 type Practice = { name: string; address: string; slug: string; stage: MapPracticeStage };
 
-const MAP_FOCAL_SYNTHETIC_ID = "__blocharch_map_focal__";
+const MAP_FOCAL_SYNTHETIC_ID = "__dg_map_focal__";
 
 const STAGE_META: Record<MapPracticeStage, { label: string; color: string }> = Object.fromEntries(
   LEAD_STAGES.map((stage) => [
@@ -217,7 +217,7 @@ export function MapClient({
         hub: isHub,
         hubDetail:
           isHub && focalAnchor && hubUsesIconStudio(focalAnchor)
-            ? "5 Plato Place, 72–74 St Dionis Road, London SW6 4TU · Blocharch hub"
+            ? "5 Plato Place, 72–74 St Dionis Road, London SW6 4TU · Dimension Group hub"
             : undefined,
       });
     }
@@ -236,7 +236,7 @@ export function MapClient({
         lng: focalAnchor.lng,
         stage: "cold",
         hub: true,
-        hubDetail: "5 Plato Place, 72–74 St Dionis Road, London SW6 4TU · Blocharch hub",
+        hubDetail: "5 Plato Place, 72–74 St Dionis Road, London SW6 4TU · Dimension Group hub",
         href: "https://www.icon-architects.com/",
       });
     }
@@ -431,7 +431,7 @@ export function MapClient({
         </p>
         {hubUsesIconStudio(focalAnchor) ? (
           <p className="text-xs text-slate-500 mb-3">
-            Large amber glow — Blocharch focal point: {focalAnchor.name} at 5 Plato Place, St Dionis Road, London SW6 4TU (
+            Large amber glow — Dimension Group focal point: {focalAnchor.name} at 5 Plato Place, St Dionis Road, London SW6 4TU (
             <a
               href="https://www.icon-architects.com/"
               target="_blank"

@@ -3,8 +3,8 @@ export const SALES_CALCULATOR_TIER_MIN = 25;
 export const SALES_CALCULATOR_TIER_MAX = 40;
 export const SALES_CALCULATOR_TIER_DEFAULT = 25;
 
-/** BLOCHARCH monthly fee = benchmark × (1 − saving%). */
-export function blocharchMonthlyFeeGbp(benchmarkFeeGbp: number, savingPercent: number): number {
+/** Dimension Group monthly fee = benchmark × (1 − saving%). */
+export function monthlyServiceFeeGbp(benchmarkFeeGbp: number, savingPercent: number): number {
   if (!Number.isFinite(benchmarkFeeGbp) || benchmarkFeeGbp <= 0) return 0;
   const pct = Math.min(
     SALES_CALCULATOR_TIER_MAX,
@@ -13,8 +13,8 @@ export function blocharchMonthlyFeeGbp(benchmarkFeeGbp: number, savingPercent: n
   return roundGbp(benchmarkFeeGbp * (1 - pct / 100));
 }
 
-export function monthlySavingGbp(benchmarkFeeGbp: number, blocharchFeeGbp: number): number {
-  return roundGbp(Math.max(0, benchmarkFeeGbp - blocharchFeeGbp));
+export function monthlySavingGbp(benchmarkFeeGbp: number, serviceFeeGbp: number): number {
+  return roundGbp(Math.max(0, benchmarkFeeGbp - serviceFeeGbp));
 }
 
 function roundGbp(value: number): number {

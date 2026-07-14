@@ -36,10 +36,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (body.monthlyHourCap != null)
       athleteData.monthlyHourCap = Math.max(1, Math.round(Number(body.monthlyHourCap) || 160));
     if (body.overtimeRateZar != null) athleteData.overtimeRateZar = Math.max(0, Number(body.overtimeRateZar) || 0);
-    if (body.blocharchStartDate != null) {
-      const d = parseDateOnly(String(body.blocharchStartDate));
+    if (body.memberStartDate != null) {
+      const d = parseDateOnly(String(body.memberStartDate));
       if (!d) return NextResponse.json({ error: "Invalid start date" }, { status: 400 });
-      athleteData.blocharchStartDate = d;
+      athleteData.memberStartDate = d;
     }
     if (body.profilePhotoUrl !== undefined) {
       try {
@@ -104,7 +104,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         baseMonthlyPayZar: Number(athlete.baseMonthlyPayZar),
         monthlyHourCap: athlete.monthlyHourCap,
         overtimeRateZar: Number(athlete.overtimeRateZar),
-        blocharchStartDate: athlete.blocharchStartDate.toISOString().slice(0, 10),
+        memberStartDate: athlete.memberStartDate.toISOString().slice(0, 10),
         profilePhotoUrl: athlete.profilePhotoUrl,
         profilePhotoBgColor: athlete.profilePhotoBgColor,
         profilePhotoTextTone: athlete.profilePhotoTextTone,

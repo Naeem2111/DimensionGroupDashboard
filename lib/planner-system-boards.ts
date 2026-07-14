@@ -4,8 +4,8 @@ import { createDefaultColumnsOnBoard } from "@/lib/planner-columns-seed";
 import { ensureDefaultLabelsOnBoard } from "@/lib/planner-labels-seed";
 
 export const SYSTEM_BOARD_TITLES = {
-  blocharch_outbox: "Blocharch Outbox",
-  blocharch_inbox: "Blocharch Inbox",
+  system_outbox: "Team Outbox",
+  system_inbox: "Team Inbox",
   my_tasks: "My Tasks",
   completed: "Completed",
 } as const satisfies Record<Exclude<PlannerBoardKind, "custom" | "project">, string>;
@@ -54,12 +54,12 @@ async function createBoardWithColumns(
   return board;
 }
 
-/** One admin Blocharch Outbox board (team scope, system). */
+/** One admin Team Outbox board (team scope, system). */
 export async function ensureAdminOutboxBoard(adminUserId: string) {
   return createBoardWithColumns(prisma, {
-    title: SYSTEM_BOARD_TITLES.blocharch_outbox,
+    title: SYSTEM_BOARD_TITLES.system_outbox,
     scope: "team",
-    kind: "blocharch_outbox",
+    kind: "system_outbox",
     ownerId: adminUserId,
     isSystem: true,
     color: "#f59e0b",
@@ -73,9 +73,9 @@ export async function ensureAthleteSystemBoards(
   tx: Tx = prisma
 ) {
   await createBoardWithColumns(tx, {
-    title: SYSTEM_BOARD_TITLES.blocharch_inbox,
+    title: SYSTEM_BOARD_TITLES.system_inbox,
     scope: "personal",
-    kind: "blocharch_inbox",
+    kind: "system_inbox",
     ownerId: athleteUserId,
     athleteId,
     isSystem: true,

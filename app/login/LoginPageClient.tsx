@@ -87,7 +87,7 @@ function LoginForm() {
             disabled={loading}
             className="mt-6 w-full rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-brand/30 transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? "Signing in…" : "Sign in to Blocharch"}
+            {loading ? "Signing in…" : "Sign in to Dimension Group"}
           </button>
         </form>
       </div>

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { brandAssets } from "@/lib/blocharch-brand";
+import { brandAssets } from "@/lib/brand";
 import { DEFAULT_THEME, THEME_COOKIE, normalizeTheme } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  title: "Project tracker — Blocharch",
+  title: "Project tracker — Dimension Group",
   description: "Live view of your active projects and open tasks.",
   icons: {
     icon: [{ url: brandAssets.favicon, type: "image/png" }],

@@ -17,18 +17,8 @@ export interface UserRecord {
 }
 
 function defaultBootstrapCreds(): { username: string; password: string } {
-  const username = (
-    process.env.DG_ADMIN_USERNAME ||
-    process.env.BLOCHARCH_ADMIN_USERNAME ||
-    "admin"
-  )
-    .trim()
-    .toLowerCase();
-  const password = (
-    process.env.DG_ADMIN_PASSWORD ||
-    process.env.BLOCHARCH_ADMIN_PASSWORD ||
-    "changeme"
-  ).trim();
+  const username = (process.env.DG_ADMIN_USERNAME || "admin").trim().toLowerCase();
+  const password = (process.env.DG_ADMIN_PASSWORD || "changeme").trim();
   return { username, password };
 }
 

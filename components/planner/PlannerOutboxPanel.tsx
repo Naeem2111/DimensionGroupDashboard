@@ -32,7 +32,7 @@ const emptyForm = {
   notes: "",
 };
 
-export function BlocharchOutboxPanel() {
+export function PlannerOutboxPanel() {
   const [athletes, setAthletes] = useState<AthleteOption[]>([]);
   const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [history, setHistory] = useState<OutboxRow[]>([]);
@@ -123,7 +123,7 @@ export function BlocharchOutboxPanel() {
         return;
       }
       const athleteName = athletes.find((a) => a.id === form.athleteId)?.fullName ?? "athlete";
-      setSuccess(`Assigned to ${athleteName} — card added to their Blocharch Inbox.`);
+      setSuccess(`Assigned to ${athleteName} — card added to their Team Inbox.`);
       setForm({ ...emptyForm, athleteId: form.athleteId });
       await loadHistory();
     } finally {
@@ -134,10 +134,10 @@ export function BlocharchOutboxPanel() {
   return (
     <section className="card-tool space-y-6 rounded-xl p-5 ring-1 ring-amber-500/20">
       <div>
-        <h2 className="text-lg font-semibold text-amber-100">Blocharch Outbox</h2>
+        <h2 className="text-lg font-semibold text-amber-100">Team Outbox</h2>
         <p className="mt-1 text-sm text-slate-400">
           Assign work to an athlete. Each assignment creates a card on their{" "}
-          <span className="text-slate-300">Blocharch Inbox</span> automatically.
+          <span className="text-slate-300">Team Inbox</span> automatically.
         </p>
       </div>
 

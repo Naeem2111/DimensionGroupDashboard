@@ -4,7 +4,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type React
 import { useRouter, useSearchParams } from "next/navigation";
 import { composeDueAtIso, splitDueAtIso } from "@/lib/planner-due-datetime";
 import { KanbanTaskMovePad } from "@/components/planner/KanbanTaskMovePad";
-import { BlocharchOutboxPanel } from "@/components/planner/BlocharchOutboxPanel";
+import { PlannerOutboxPanel } from "@/components/planner/PlannerOutboxPanel";
 import { MultiBoardKanban } from "@/components/planner/MultiBoardKanban";
 import { PlannerLabelChip, plannerLabelChipStyle } from "@/components/planner/PlannerLabelChip";
 import {
@@ -26,8 +26,8 @@ import { ClientAvatar } from "@/components/ops/ClientAvatar";
 import { asAvatarTextTone } from "@/lib/avatar-text-tone";
 
 const FIXED_BOARD_KINDS = new Set([
-  "blocharch_outbox",
-  "blocharch_inbox",
+  "system_outbox",
+  "system_inbox",
   "my_tasks",
   "completed",
 ]);
@@ -521,7 +521,7 @@ export function PlannerClient() {
         (b) =>
           hideCompleted(b) &&
           b.ownerId === currentUserId &&
-          (b.scope === "personal" || b.kind === "blocharch_outbox")
+          (b.scope === "personal" || b.kind === "system_outbox")
       );
     }
     if (area === "team" && athleteUserId) {
@@ -532,13 +532,13 @@ export function PlannerClient() {
 
   const inboxMoveTargets = useMemo(() => {
     return filteredBoards.filter(
-      (b) => b.kind !== "blocharch_inbox" && b.kind !== "blocharch_outbox"
+      (b) => b.kind !== "system_inbox" && b.kind !== "system_outbox"
     );
   }, [filteredBoards]);
 
   const loadAllBoardDetails = useCallback(async () => {
     const ids = filteredBoards
-      .filter((b) => b.kind !== "blocharch_outbox")
+      .filter((b) => b.kind !== "system_outbox")
       .map((b) => b.id);
     if (ids.length === 0) return;
     setBoardsLoading(true);
@@ -570,7 +570,7 @@ export function PlannerClient() {
   const multiBoardList = useMemo(
     () =>
       Object.values(boardDetailsById)
-        .filter((b) => b.kind !== "blocharch_outbox")
+        .filter((b) => b.kind !== "system_outbox")
         .sort((a, b) => a.title.localeCompare(b.title)),
     [boardDetailsById]
   );
@@ -627,7 +627,7 @@ export function PlannerClient() {
         break;
       }
     }
-    if (athleteParam === "me" && bd.kind === "blocharch_inbox") {
+    if (athleteParam === "me" && bd.kind === "system_inbox") {
       await fetch("/api/athlete/notifications/mark-task-read", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1135,7 +1135,7 @@ export function PlannerClient() {
           >
             <p className="text-lg font-semibold text-white">Personal</p>
             <p className="mt-2 text-sm text-slate-400">
-              Your boards, including Blocharch Outbox when you are admin.
+              Your boards, including Team Outbox when you are admin.
             </p>
           </button>
           {canUseTeamRoster ? (
@@ -1308,7 +1308,7 @@ export function PlannerClient() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {filteredBoards.map((b, boardIdx) => {
-            const inboxUnread = b.kind === "blocharch_inbox" && inboxUnreadCount > 0;
+            const inboxUnread = b.kind === "system_inbox" && inboxUnreadCount > 0;
             return (
             <div key={b.id} className="flex items-center gap-0.5">
               {!FIXED_BOARD_KINDS.has(b.kind ?? "custom") && filteredBoards.length > 1 ? (
@@ -1339,7 +1339,7 @@ export function PlannerClient() {
                 if (!dragTaskId) setBoardId(b.id);
               }}
               onDragOver={(e) => {
-                if (!dragTaskId || b.id === boardId || b.kind === "blocharch_outbox") return;
+                if (!dragTaskId || b.id === boardId || b.kind === "system_outbox") return;
                 e.preventDefault();
                 e.dataTransfer.dropEffect = "move";
                 setDropTargetBoardId(b.id);
@@ -1384,7 +1384,7 @@ export function PlannerClient() {
 
       {showBoardPicker ? (
       <>
-      {detail?.kind === "blocharch_outbox" ? <BlocharchOutboxPanel /> : null}
+      {detail?.kind === "system_outbox" ? <PlannerOutboxPanel /> : null}
 
       {allBoardsView && showBoardPicker ? (
         <div className="space-y-3">
@@ -1408,7 +1408,7 @@ export function PlannerClient() {
         </div>
       ) : null}
 
-      {detail && detail.kind !== "blocharch_outbox" && !allBoardsView ? (
+      {detail && detail.kind !== "system_outbox" && !allBoardsView ? (
         <>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -1596,7 +1596,7 @@ export function PlannerClient() {
                       ? taskNudgeAvailability(detail.columns, t.id)
                       : null;
                     const showInboxMove =
-                      detail.kind === "blocharch_inbox" && detail.editable && inboxMoveTargets.length > 0;
+                      detail.kind === "system_inbox" && detail.editable && inboxMoveTargets.length > 0;
                     const showInsertLine =
                       detail.editable &&
                       dragTaskId &&

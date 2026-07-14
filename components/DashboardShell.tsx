@@ -69,7 +69,7 @@ export function DashboardShell({
             </svg>
           </button>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-white">Blocharch Console</p>
+            <p className="truncate text-sm font-semibold text-white">Dimension Group Console</p>
             <p className="truncate text-[11px] text-slate-500">{user.username}</p>
           </div>
         </header>

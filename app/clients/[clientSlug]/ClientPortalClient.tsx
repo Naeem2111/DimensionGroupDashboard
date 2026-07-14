@@ -346,7 +346,7 @@ export function ClientPortalClient({
         </main>
 
         <footer className="client-portal-footer border-t border-white/[0.06] px-4 py-4 text-center text-[11px] text-slate-500 sm:px-8">
-          Powered by Blocharch ·{" "}
+          Powered by Dimension Group ·{" "}
           <Link href={clientPortalPath(slug)} className="text-slate-500 hover:text-slate-400">
             Client portal
           </Link>

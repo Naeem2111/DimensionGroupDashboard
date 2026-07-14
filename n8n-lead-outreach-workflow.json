@@ -1,5 +1,5 @@
 {
-  "name": "Blocharch Lead Outreach – Email Automation",
+  "name": "Dimension Group Lead Outreach – Email Automation",
   "nodes": [
     {
       "parameters": {},
@@ -11,7 +11,7 @@
     },
     {
       "parameters": {
-        "url": "https://blocharch.vercel.app/api/n8n/leads",
+        "url": "https://dimension-group-dashboard.vercel.app/api/n8n/leads",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -26,11 +26,11 @@
       "typeVersion": 4.2,
       "position": [460, 300],
       "notesInFlow": true,
-      "notes": "Production: blocharch.vercel.app. Set Vercel N8N_API_KEY to match X-Api-Key header."
+      "notes": "Production: dimensiongroup.vercel.app. Set Vercel N8N_API_KEY to match X-Api-Key header."
     },
     {
       "parameters": {
-        "jsCode": "// Accept API response { leads: [...] } or one item per lead\nconst first = $input.first().json;\nlet leads = [];\nif (Array.isArray(first.leads)) { leads = first.leads; } else if (first.practice || first.email) { leads = $input.all().map(i => i.json); } else { leads = [first]; }\nconst output = [];\nfor (const item of leads) {\n  const p = item.practice || item;\n  const contact = (p.contact || p.name || '').trim();\n  const firstWord = contact.split(/\\s+/)[0] || (p.name || '').split(/\\s+/)[0] || 'there';\n  const web = p.website || item.website || 'https://www.blocharch.com';\n  output.push({ json: { email: p.email || item.email, firstName: firstWord, companyName: p.name || item.name || 'your practice', website: web, websiteLink: web.replace(/^https?:\\/\\//, ''), outreach_stage: item.outreach_stage || p.outreach_stage || 'cold', practice_id: p.id || item.practice_id, lead_id: item.lead_id } });\n}\nreturn output;"
+        "jsCode": "// Accept API response { leads: [...] } or one item per lead\nconst first = $input.first().json;\nlet leads = [];\nif (Array.isArray(first.leads)) { leads = first.leads; } else if (first.practice || first.email) { leads = $input.all().map(i => i.json); } else { leads = [first]; }\nconst output = [];\nfor (const item of leads) {\n  const p = item.practice || item;\n  const contact = (p.contact || p.name || '').trim();\n  const firstWord = contact.split(/\\s+/)[0] || (p.name || '').split(/\\s+/)[0] || 'there';\n  const web = p.website || item.website || 'https://dimensiongroupglobal.com';\n  output.push({ json: { email: p.email || item.email, firstName: firstWord, companyName: p.name || item.name || 'your practice', website: web, websiteLink: web.replace(/^https?:\\/\\//, ''), outreach_stage: item.outreach_stage || p.outreach_stage || 'cold', practice_id: p.id || item.practice_id, lead_id: item.lead_id } });\n}\nreturn output;"
       },
       "id": "map-lead-fields",
       "name": "Map lead fields",
@@ -65,14 +65,14 @@
         "to": "={{ $json.email }}",
         "subject": "Reducing Part 1 & Part 2 staffing costs by 25–40%",
         "emailType": "text",
-        "message": "Good day {{ $json.firstName }},\n\nI hope this email finds you well.\n\nMy name is Jethro Bloch, founder of Blocharch.\n\nEach year, we selectively reach out to a small number of UK architecture practices where we see a strong potential fit. Based on our research into {{ $json.companyName }} and the work your team is involved in, I felt it was worth reaching out directly to explore whether there might be alignment — even if just as an initial conversation.\n\nWith rising employment costs, ongoing recruitment cycles, and the reality of Part 1 and Part 2 turnover, many practices are rethinking how they structure their production capacity. Blocharch was built specifically to address this.\n\nWe provide dedicated, full-time Part 1 and Part 2–equivalent architectural staff who integrate directly into your existing team. Our team works within your established workflows and software — including Revit, AutoCAD, SketchUp, and Archicad, among others — and produces technical documentation aligned to UK standards and your office conventions.\n\nBy stabilising production in this way, practices are able to realign internal resources — allowing Part 3 Architects, associates, and directors to spend more time on client relationships, site involvement, coordination, and business development, rather than being pulled back into day-to-day production.\n\nOur model removes much of the hidden friction associated with junior staffing — including repeated recruitment, HR overhead, software licensing, equipment costs, and continuity loss — while providing long-term, dedicated architectural capacity, typically at a 25–40% saving compared to UK-based hires.\n\nAlthough our core team is based in Cape Town, we operate as a hybrid practice and work closely with UK firms on a long-term basis. We travel to the UK regularly to meet with clients and their teams in person, and we place strong value on building proper working relationships rather than operating as a remote, transactional service.\n\nIf this sounds worth exploring, I'd be happy to walk you through how we work on a short call and see whether it could be useful for {{ $json.companyName }}, now or in the future.\n\nKind regards,\nJethro Bloch\nFounder | Blocharch\n{{ $json.websiteLink }}"
+        "message": "Good day {{ $json.firstName }},\n\nI hope this email finds you well.\n\nMy name is Jethro Bloch, founder of Dimension Group.\n\nEach year, we selectively reach out to a small number of UK architecture practices where we see a strong potential fit. Based on our research into {{ $json.companyName }} and the work your team is involved in, I felt it was worth reaching out directly to explore whether there might be alignment — even if just as an initial conversation.\n\nWith rising employment costs, ongoing recruitment cycles, and the reality of Part 1 and Part 2 turnover, many practices are rethinking how they structure their production capacity. Dimension Group was built specifically to address this.\n\nWe provide dedicated, full-time Part 1 and Part 2–equivalent architectural staff who integrate directly into your existing team. Our team works within your established workflows and software — including Revit, AutoCAD, SketchUp, and Archicad, among others — and produces technical documentation aligned to UK standards and your office conventions.\n\nBy stabilising production in this way, practices are able to realign internal resources — allowing Part 3 Architects, associates, and directors to spend more time on client relationships, site involvement, coordination, and business development, rather than being pulled back into day-to-day production.\n\nOur model removes much of the hidden friction associated with junior staffing — including repeated recruitment, HR overhead, software licensing, equipment costs, and continuity loss — while providing long-term, dedicated architectural capacity, typically at a 25–40% saving compared to UK-based hires.\n\nAlthough our core team is based in Cape Town, we operate as a hybrid practice and work closely with UK firms on a long-term basis. We travel to the UK regularly to meet with clients and their teams in person, and we place strong value on building proper working relationships rather than operating as a remote, transactional service.\n\nIf this sounds worth exploring, I'd be happy to walk you through how we work on a short call and see whether it could be useful for {{ $json.companyName }}, now or in the future.\n\nKind regards,\nJethro Bloch\nFounder | Dimension Group\n{{ $json.websiteLink }}"
       },
       "id": "email-cold",
       "name": "Send Cold Email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [1140, 80],
-      "credentials": { "gmailOAuth2": { "id": "GMAIL_OAUTH2_CREDENTIAL", "name": "Gmail account (jethro@blocharch.com)" } }
+      "credentials": { "gmailOAuth2": { "id": "GMAIL_OAUTH2_CREDENTIAL", "name": "Gmail account (info@dimensiongroupglobal.com)" } }
     },
     {
       "parameters": {
@@ -81,14 +81,14 @@
         "to": "={{ $json.email }}",
         "subject": "Next steps & availability for a quick call",
         "emailType": "text",
-        "message": "Hi {{ $json.firstName }},\n\nThank you for getting back to me — it's great to hear from you.\n\nI'd be very happy to take this forward and explore things in a bit more detail.\n\nAs a next step, it would be helpful to set up a short Zoom call so we can better understand your current setup, workload, and where additional support could be most useful. From there, we can talk through how this could work in a way that genuinely adds value to your team.\n\nIf you're happy to proceed, please let me know your availability over the next week or so, and I'll coordinate a time that works best.\n\nIn the meantime, you're very welcome to have a look at our website (www.blocharch.com) for a bit more background on Blocharch.\n\nLooking forward to chatting further.\n\nKind regards,\nJethro Bloch\nFounder | Blocharch"
+        "message": "Hi {{ $json.firstName }},\n\nThank you for getting back to me — it's great to hear from you.\n\nI'd be very happy to take this forward and explore things in a bit more detail.\n\nAs a next step, it would be helpful to set up a short Zoom call so we can better understand your current setup, workload, and where additional support could be most useful. From there, we can talk through how this could work in a way that genuinely adds value to your team.\n\nIf you're happy to proceed, please let me know your availability over the next week or so, and I'll coordinate a time that works best.\n\nIn the meantime, you're very welcome to have a look at our website (dimensiongroupglobal.com) for a bit more background on Dimension Group.\n\nLooking forward to chatting further.\n\nKind regards,\nJethro Bloch\nFounder | Dimension Group"
       },
       "id": "email-book-call",
       "name": "Send Book Call Email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [1140, 240],
-      "credentials": { "gmailOAuth2": { "id": "GMAIL_OAUTH2_CREDENTIAL", "name": "Gmail account (jethro@blocharch.com)" } }
+      "credentials": { "gmailOAuth2": { "id": "GMAIL_OAUTH2_CREDENTIAL", "name": "Gmail account (info@dimensiongroupglobal.com)" } }
     },
     {
       "parameters": {
@@ -97,14 +97,14 @@
         "to": "={{ $json.email }}",
         "subject": "Thanks, {{ $json.firstName }}",
         "emailType": "text",
-        "message": "Hi {{ $json.firstName }},\n\nThank you so much for getting back to me, I really appreciate you taking the time to review everything and for letting me know.\n\nI completely understand, and thank you again for considering it. If anything changes in the future, or if there's ever a point where additional capacity or support might be helpful, please don't hesitate to reach out — I'd be very happy to reconnect.\n\nWishing you and the team all the best going forward.\n\nKind regards,\nJethro Bloch\nFounder | Blocharch\n{{ $json.websiteLink }}"
+        "message": "Hi {{ $json.firstName }},\n\nThank you so much for getting back to me, I really appreciate you taking the time to review everything and for letting me know.\n\nI completely understand, and thank you again for considering it. If anything changes in the future, or if there's ever a point where additional capacity or support might be helpful, please don't hesitate to reach out — I'd be very happy to reconnect.\n\nWishing you and the team all the best going forward.\n\nKind regards,\nJethro Bloch\nFounder | Dimension Group\n{{ $json.websiteLink }}"
       },
       "id": "email-thank-you",
       "name": "Send Thank You Email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [1140, 400],
-      "credentials": { "gmailOAuth2": { "id": "GMAIL_OAUTH2_CREDENTIAL", "name": "Gmail account (jethro@blocharch.com)" } }
+      "credentials": { "gmailOAuth2": { "id": "GMAIL_OAUTH2_CREDENTIAL", "name": "Gmail account (info@dimensiongroupglobal.com)" } }
     },
     {
       "parameters": {
@@ -113,19 +113,19 @@
         "to": "={{ $json.email }}",
         "subject": "Embedded Part 1 / Part 2 Support for UK Practices",
         "emailType": "text",
-        "message": "Good day {{ $json.firstName }},\n\nJust following up on my previous email in case it slipped through.\n\nI reached out as we work closely with UK practices looking for reliable, long-term Part 1 / Part 2 production support — without the disruption that often comes with repeated recruitment and junior staff turnover.\n\nWe provide dedicated, full-time architectural staff through our Embedded Architect Model, who embed directly into your team and work within your existing workflows and office standards, offering consistent technical capacity over the long term rather than short-term or project-based assistance.\n\nIf helpful, I'd be glad to briefly explain how this works in practice and see whether it could support {{ $json.companyName }}, now or later in the year.\n\nNo pressure at all — just thought it was worth checking back in.\n\nKind regards,\nJethro Bloch\nFounder | Blocharch\n{{ $json.websiteLink }}"
+        "message": "Good day {{ $json.firstName }},\n\nJust following up on my previous email in case it slipped through.\n\nI reached out as we work closely with UK practices looking for reliable, long-term Part 1 / Part 2 production support — without the disruption that often comes with repeated recruitment and junior staff turnover.\n\nWe provide dedicated, full-time architectural staff through our Embedded Architect Model, who embed directly into your team and work within your existing workflows and office standards, offering consistent technical capacity over the long term rather than short-term or project-based assistance.\n\nIf helpful, I'd be glad to briefly explain how this works in practice and see whether it could support {{ $json.companyName }}, now or later in the year.\n\nNo pressure at all — just thought it was worth checking back in.\n\nKind regards,\nJethro Bloch\nFounder | Dimension Group\n{{ $json.websiteLink }}"
       },
       "id": "email-follow-up",
       "name": "Send Follow-Up Email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [1140, 560],
-      "credentials": { "gmailOAuth2": { "id": "GMAIL_OAUTH2_CREDENTIAL", "name": "Gmail account (jethro@blocharch.com)" } }
+      "credentials": { "gmailOAuth2": { "id": "GMAIL_OAUTH2_CREDENTIAL", "name": "Gmail account (info@dimensiongroupglobal.com)" } }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://blocharch.vercel.app/api/n8n/lead-event",
+        "url": "https://dimension-group-dashboard.vercel.app/api/n8n/lead-event",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
@@ -150,7 +150,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://blocharch.vercel.app/api/n8n/lead-event",
+        "url": "https://dimension-group-dashboard.vercel.app/api/n8n/lead-event",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
@@ -173,7 +173,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://blocharch.vercel.app/api/n8n/lead-event",
+        "url": "https://dimension-group-dashboard.vercel.app/api/n8n/lead-event",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
@@ -196,7 +196,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://blocharch.vercel.app/api/n8n/lead-event",
+        "url": "https://dimension-group-dashboard.vercel.app/api/n8n/lead-event",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {

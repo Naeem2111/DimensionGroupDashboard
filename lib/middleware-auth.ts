@@ -11,7 +11,7 @@ export type SessionPayload = {
 
 function sessionSecret(): string {
   const s =
-    process.env.DG_SESSION_SECRET?.trim() || process.env.BLOCHARCH_SESSION_SECRET?.trim();
+    process.env.DG_SESSION_SECRET?.trim();
   if (s && s.length >= 16) return s;
   return "__dimension_group_dev_session_secret__";
 }

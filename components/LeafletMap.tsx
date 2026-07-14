@@ -18,7 +18,7 @@ type MarkerItem = {
   stage: Stage;
   subtitle?: string;
   href?: string;
-  /** First client / Blocharch hub (e.g. Icon Architects at Plato Place). */
+  /** First client / Dimension Group hub (e.g. Icon Architects at Plato Place). */
   hub?: boolean;
   /** Extra line under hub banner (studio address). */
   hubDetail?: string;
@@ -147,7 +147,7 @@ function MapClusterLayer({
         m.hub && m.hubDetail
           ? `<div class="text-xs font-medium text-amber-700">${escapeHtml(m.hubDetail)}</div>`
           : m.hub
-            ? `<div class="text-xs font-medium text-amber-700">Blocharch hub practice</div>`
+            ? `<div class="text-xs font-medium text-amber-700">Dimension Group hub</div>`
             : "",
         m.subtitle ? `<div class="text-sm opacity-80">${escapeHtml(m.subtitle)}</div>` : "",
         m.href
