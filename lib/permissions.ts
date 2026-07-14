@@ -1,4 +1,4 @@
-import type { UserRole } from "@/lib/users-store";
+import type { UserRole } from "@/lib/user-role";
 
 /** Feature areas within the single Blocharch console domain. */
 export type AppModule = "marketing" | "planner" | "admin" | "ops" | "athlete_portal";

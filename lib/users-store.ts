@@ -2,8 +2,9 @@ import { randomUUID } from "crypto";
 import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_THEME, normalizeTheme, type ThemePreference } from "@/lib/theme";
+import type { UserRole } from "@/lib/user-role";
 
-export type UserRole = "admin" | "manager" | "user";
+export type { UserRole };
 
 export interface UserRecord {
   id: string;
