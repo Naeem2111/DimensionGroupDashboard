@@ -1,0 +1,103 @@
+LEGEND,,,
+Status,Meaning,
+Done,Implemented and matches the 15.06.2026 audit spec for the main workflow.,
+Partial,Started or partially built; gaps remain vs the audit.,
+Missing,Not implemented or contradicts the audit spec.,
+Source,AUDIT = Naeem Dashboard Audit 15.06.2026.pdf | V1/V2 = prior feedback PDFs (archived rows at bottom),
+,,,
+Section,Topic,Source,Status,Notes
+MARKETING,Overview layout & styling,AUDIT,Done,No design changes requested.
+MARKETING,Overview map coordinates count reflects all geocoded practices,AUDIT,Done,Overview shows geocoded count of total directory.
+MARKETING,Map visual quality & London pins,AUDIT,Done,Layout and pin styling approved.
+MARKETING,Map — load all leads (~3000 practices geocoded),AUDIT,Done,Bulk postcodes.io backfill; 2228/2242 practices with addresses mapped.
+MARKETING,Map — default all pins to Cold,AUDIT,Done,Practices without lead row default to cold.
+MARKETING,Map — manual status dropdown per pin (6 stages),AUDIT,Done,Stage select in pin popup.
+MARKETING,Map — live status update + pin colour change,AUDIT,Done,Stage PATCH updates pin colour live.
+MARKETING,Practices directory (2336 total),AUDIT,Done,Table layout and count correct; no changes needed.
+MARKETING,Lead Nurturing — remove Activate workflow button,AUDIT,Done,Workflow UI removed from AutomationClient.
+MARKETING,Lead Nurturing — remove n8n/workflow text,AUDIT,Done,n8n copy removed from nurturing page.
+MARKETING,Lead Nurturing — manual stage/rating area,AUDIT,Done,LeadStagePicker + rating in nurturing table.
+MARKETING,Lead Nurturing — reversible star rating (0 stars),AUDIT,Done,Click active star again to clear to 0.
+MARKETING,Lead Nurturing — manual editable Last emailed,AUDIT,Done,datetime-local editor in nurturing table.
+OPS,Ops Overview layout & cards,AUDIT,Done,Structure approved.
+OPS,Ops sub-nav: remove Clients/Athletes; add Daily submissions,AUDIT,Done,OpsSubNav updated; Daily submissions tab added.
+OPS,Ops sub-nav order: Overview / Daily submissions / Projects / Commercial / Check-ins / Notifications / Analytics,AUDIT,Done,Notifications removed; order matches audit.
+OPS,Daily Submissions — layout & log display,AUDIT,Done,Ops submissions hub working.
+OPS,Daily Submissions — required field when task type Other,AUDIT,Done,Ops hub shows Other explanation from line item notes.
+OPS,Daily Submissions — check-in red glow until actioned,AUDIT,Done,Sidebar/sub-nav glow + ops banner + flagged submission cards.
+OPS,Daily Submissions — client logo on admin logs,AUDIT,Done,ClientAvatar from onboarding logoUrl on each line item.
+OPS,Daily Submissions — light theme legibility,AUDIT,Done,Light-theme overrides for red/amber/emerald status text and check-in alerts.
+OPS,Daily Submissions — deadline beaten on 100% complete,AUDIT,Done,completedAt + deadlineBeatenDays stored on auto-complete at 100%.
+OPS,Projects — admin cards match athlete My Projects design,AUDIT,Done,Colour border + progress bar on OpsProjectsClient.
+OPS,Projects — due-date colour scale on admin cards,AUDIT,Done,project-color-scale on ops project cards.
+OPS,Project form — remove Blocker checkbox,AUDIT,Done,Removed from edit form.
+OPS,Project form — remove Check-in requested checkbox,AUDIT,Done,Removed from edit form.
+OPS,Commercial — layout & calculations,AUDIT,Done,Lane revenue/cost/margin breakdown approved.
+OPS,Commercial — live vs manual GBP/ZAR exchange rate,AUDIT,Done,Manual/live toggle on Commercial; live via Frankfurter API.
+OPS,Commercial — circular client logo next to name,AUDIT,Done,ClientAvatar on Commercial lane + ledger tables.
+OPS,Commercial — client logo upload on onboarding,AUDIT,Done,Same upload flow on Clients onboarding page.
+OPS,Check-ins — unify Book a Call + Daily Log checkbox into Check-in Requests,AUDIT,Done,CheckInRequestModal from daily log.
+OPS,Check-ins — remove admin Notifications section,AUDIT,Done,Removed from sidebar; /ops/notifications redirects to check-ins.
+OPS,Check-ins — Scheduled Meetings tab (reversible),AUDIT,Done,Scheduled meetings filter tab added.
+OPS,Check-ins — source label (Book a Call vs Daily Log),AUDIT,Done,source on schema + request cards.
+OPS,Analytics — due date risk progress % as text,AUDIT,Done,showLabel on analytics progress bars.
+OPS,Analytics — month filter & charts,AUDIT,Done,Hours by phase/client/athlete + profitability working.
+OPS,Analytics — hours by phase accumulates over time (not monthly reset),AUDIT,Partial,Phase totals are month-scoped from daily log line items.
+OPS,Analytics — client logo next to client name,AUDIT,Done,Client logos on charts and due-date tables.
+OPS,Analytics — beaten deadlines per athlete,AUDIT,Done,Beaten deadlines chart + detail table with days early.
+OPS,Analytics — client/firm filter,AUDIT,Done,All clients or single firm filter on analytics API + UI.
+OPS,Check-ins — Pending/Unscheduled (red) vs Scheduled (green),AUDIT,Done,Red left border for pending; green for scheduled/approved.
+PLANNER,Board create/rename/delete,AUDIT,Done,Approved.
+PLANNER,Remove Cross-board To-dos (admin + athlete),AUDIT,Done,Section removed from PlannerClient.
+PLANNER,Reliable drag-and-drop + scroll,AUDIT,Partial,RAF auto-scroll retained; D-pad on every card + arrow keys; drag still available.
+PLANNER,Labels simplified to 5 only (This Week / Tomorrow / Urgent / Urgent Today / Waiting),AUDIT,Done,planner-approved-labels.ts + purgeUnapprovedBoardLabels on board load.
+PLANNER,Custom column colour + optional label link,AUDIT,Done,linkedLabelName on PlannerColumn; create/edit column UI.
+PLANNER,Column-to-label auto-move logic,AUDIT,Done,relocateTaskToLabelLinkedColumn on label PATCH + column link change + inbox move-to-board.
+PLANNER,Done column per board (not separate Completed board),AUDIT,Done,setPlannerTaskCompleted always uses same-board Done column; athlete Completed board flow disabled.
+PLANNER,Remove fixed Completed board tab,AUDIT,Done,completed kind filtered from board tabs.
+PLANNER,Board reorder (movable boards),AUDIT,Done,sortOrder + arrows; project boards movable.
+PLANNER,Default columns General + 5 label columns + Done,AUDIT,Done,planner-default-columns.ts; linkedLabelName on create; backfill on board load.
+PLANNER,Light theme tab and button legibility,AUDIT,Done,planner-tab-selected + btn-brand-primary light overrides.
+OUTBOX,Blocharch Outbox assignment fields,AUDIT,Done,Athlete/project/title/description/due/notes working.
+OUTBOX,Priority → approved label field on assign,AUDIT,Done,Label dropdown replaces priority on outbox form.
+OUTBOX,Athlete notification + red badges on assign,AUDIT,Done,Notification + inbox badge + pulse on planner nav.
+OUTBOX,Inbox single receiving column,AUDIT,Done,Inbox board uses single Blocharch Inbox/backlog receiving column.
+OUTBOX,Inbox move-not-copy to athlete board,AUDIT,Done,move-to-board API moves from blocharch_inbox with label-column placement.
+OUTBOX,Athlete dropdown to move task to another board,AUDIT,Done,Move to board… button + modal on inbox task cards.
+ONBOARDING,Clients — layout,AUDIT,Done,Client manager approved.
+ONBOARDING,Clients — logo upload (512px circular 32–40px display),AUDIT,Done,Upload on create + edit in OpsClientsClient; shown in Commercial.
+ONBOARDING,Clients — logo circle background colour picker,AUDIT,Done,logoBgColor on OpsClient + AvatarColorPicker in onboarding.
+ONBOARDING,Clients — initials text colour (light/dark when no logo),AUDIT,Done,logoTextTone + AvatarTextTonePicker; white or black initials on circle bg.
+ONBOARDING,Clients — Save/New Client light theme buttons,AUDIT,Done,btn-brand-primary utility for light contrast.
+ONBOARDING,Athletes — layout,AUDIT,Done,No major changes needed.
+ONBOARDING,Athletes — optional profile picture upload,AUDIT,Done,POST /api/ops/athletes/[id]/photo + AvatarUploadField; initials fallback JB.
+ONBOARDING,Athletes — profile circle background colour,AUDIT,Done,profilePhotoBgColor + colour picker on athlete onboarding.
+ONBOARDING,Athletes — initials text colour (light/dark when no photo),AUDIT,Done,profilePhotoTextTone + AvatarTextTonePicker in AvatarUploadField.
+WORKSPACE,My Workspace — no changes needed,AUDIT,Done,Approved as-is.
+WORKSPACE,My Workspace light theme selected states,AUDIT,Done,Planner tab + button light-theme classes shared with workspace.
+WORKSPACE,Sidebar hide/unhide sections,AUDIT,Missing,Collapse exists; no Hide + Show hidden sections at footer.
+PLATFORM,Users & Access light theme legibility,AUDIT,Done,access-grant/revoke + btn-brand-primary light overrides.
+ATHLETE,Dashboard layout & stats cards,AUDIT,Done,Hours/earnings/projects approved.
+ATHLETE,Dashboard Alerts sync with unread notifications,AUDIT,Done,Unread notifications merged into dashboard alerts with links.
+ATHLETE,Daily Log layout & smart calculation,AUDIT,Done,Calendar/edit/wellbeing 1-10/hours approved in recent work.
+ATHLETE,Daily Log — previous entries collapsed,AUDIT,Done,Expandable previous logs with project cards; click to edit.
+ATHLETE,Daily Log — beaten deadlines on dashboard,AUDIT,Done,Beaten deadlines card with count and recent early completions.
+ATHLETE,Daily Log — check-in opens Book a Call form modal,AUDIT,Done,CheckInRequestModal from daily log.
+ATHLETE,Daily Log — Other task type requires explanation,AUDIT,Done,Required Other field + API validation.
+ATHLETE,My Projects cards & due-date calendar,AUDIT,Done,Colour scale + calendar + progress bar implemented.
+ATHLETE,Completed Projects at 100% progress,AUDIT,Done,Daily log sync sets completed at 100% and moves to Completed Projects.
+ATHLETE,Completed Projects — reversible (back to My Projects),AUDIT,Done,Still in progress checkbox reactivates to in_progress at 90% + restores project board.
+ATHLETE,Notifications → deep link to Blocharch Inbox task,AUDIT,Done,linkPath uses athlete=me; opening task marks notification read.
+ATHLETE,Inbox flash/highlight on new assignment,AUDIT,Done,Sidebar pulse + inbox board tab badge/pulse in planner.
+ATHLETE,Simplify athlete sidebar (single My Workspace; no duplicate Planner section),AUDIT,Done,Planner section hidden for athlete role; sub-nav uses team inbox link.
+PLATFORM,Mobile-friendly console (collapsible sidebar),AUDIT,Done,DashboardShell + drawer nav shipped f6ffcad.
+PLATFORM,Explicit viewport meta,AUDIT,Done,viewport export in app/layout.tsx.
+,,,
+ARCHIVE — prior V1/V2 audit (superseded by 15.06.2026 PDF),,,
+#,Topic,Source,Status,Notes
+V1-1,Overall console structure,V1,Partial,Superseded by AUDIT sidebar/onboarding items.
+V1-17,Marketing map all practices,V1,Partial,See MARKETING map rows above.
+V2-9,Tier slider + client logo,V2,Partial,Tier slider done; logo see ONBOARDING Clients row.
+V2-16,Backup/staging/rollback,V2,Missing,Neon PITR scripts only.
+V2-19,Google Calendar + Zoom E2E,V2,Partial,Needs credentials.
+V1-13,Google Sheet import daily submissions,V1,Missing,Not in 15.06 audit.

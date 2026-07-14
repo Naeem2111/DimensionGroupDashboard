@@ -1,0 +1,27 @@
+{
+  "https://architectdirectory.co.uk/practice/test-design-on-track": {
+    "stage": "cold",
+    "rating": 4,
+    "notes": "Test client – Design on Track"
+  },
+  "https://architectdirectory.co.uk/practice/test-bloch-studio": {
+    "stage": "cold",
+    "rating": 5,
+    "notes": "Test client – Bloch Studio"
+  },
+  "https://architectdirectory.co.uk/practice/test-designontrack-uk": {
+    "stage": "cold",
+    "rating": 3,
+    "notes": "Test client – Design on Track UK"
+  },
+  "https://architectdirectory.co.uk/practice/test-naeem-gmail": {
+    "stage": "cold",
+    "rating": 0,
+    "notes": "Test – naeem2111@gmail.com"
+  },
+  "https://architectdirectory.co.uk/practice/test-eazithenga": {
+    "stage": "cold",
+    "rating": 0,
+    "notes": "Test – naeem@eazithenga.com"
+  }
+}

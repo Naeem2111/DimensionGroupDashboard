@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# Local / secrets
+.env
+.env.local
+*.db
+architect_leads.db
+
+# Scraped data (optional: remove these lines if you want to commit architects.json/csv)
+# architects.json
+# architects.csv
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+.next/
+out/
+
+# Local data caches
+data/geocache.json
+data/users.json
+
+# Uploaded client logos (stored on disk at runtime)
+public/uploads/clients/*
+!public/uploads/clients/.gitkeep
+
+# Vercel
+.vercel
+
+# Local temp / build artifacts
+.tmp-cookies.txt
+.tmp_frames/
+Untitled
+*.backup
+tsconfig.tsbuildinfo

@@ -1,0 +1,698 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  manager
+  user
+}
+
+enum LeadStage {
+  cold
+  targeted
+  first_email_sent
+  follow_up_due
+  follow_up_sent
+  reply_received
+  positive_reply
+  interested
+  client_onboarded
+  negative_reply
+  not_interested
+  /** @deprecated — migrated to first_email_sent */
+  no_reply
+  /** @deprecated — migrated to interested */
+  follow_up_interested
+  /** @deprecated — migrated to not_interested */
+  follow_up_not_interested
+}
+
+enum LeadCommunicationType {
+  first_email
+  follow_up_email
+  inbound_reply
+  whatsapp
+  linkedin
+  call
+  note
+  other
+}
+
+enum LeadCommunicationDirection {
+  outbound
+  inbound
+}
+
+enum PlannerBoardScope {
+  personal
+  team
+}
+
+/** Fixed system boards vs user-created boards (see lib/planner-system-boards.ts). */
+enum PlannerBoardKind {
+  custom
+  blocharch_outbox
+  blocharch_inbox
+  my_tasks
+  completed
+  project
+}
+
+enum PlannerMemberRole {
+  editor
+  viewer
+}
+
+enum OpsClientStatus {
+  active
+  inactive
+}
+
+enum OpsPricingTier {
+  tier_25
+  tier_30
+  tier_35
+  tier_40
+}
+
+enum OpsAthleteStatus {
+  active
+  inactive
+}
+
+enum OpsProjectComplexity {
+  low
+  medium
+  high
+}
+
+enum OpsProjectStatus {
+  not_started
+  in_progress
+  waiting_on_feedback
+  zoom_required
+  blocked
+  completed
+  handed_over
+}
+
+enum OpsProjectPhase {
+  survey_conversion
+  existing_drawings
+  proposed_drawings
+  planning_submission
+  tender_construction_pack
+  construction
+  housekeeping_internal
+}
+
+enum OpsTaskType {
+  plans
+  sections
+  elevations
+  joinery_drawings
+  electrical_drawings
+  modelling_3d
+  rendering
+  coordination_markups
+  review_qa
+  admin_housekeeping
+  other
+}
+
+enum OpsUrgencyStatus {
+  normal
+  critical
+  completed
+}
+
+enum OpsExchangeRateType {
+  live
+  reporting
+}
+
+model Architect {
+  id          String   @id @default(uuid())
+  url         String   @unique
+  name        String
+  website     String?
+  socials     String[]
+  email       String?
+  address     String?
+  contact     String?
+  phone       String?
+  description String?
+  yearsActive String?  @map("years_active")
+  staff       String?
+  awards      String[]
+  latitude    Float?
+  longitude   Float?
+  geocodedAt  DateTime? @map("geocoded_at")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lead Lead?
+
+  @@map("architects")
+}
+
+model Lead {
+  id                    String                  @id @default(uuid())
+  architectUrl          String                  @unique @map("architect_url")
+  stage                 LeadStage               @default(cold)
+  rating                Int                     @default(0)
+  notes                 String?
+  software              String?
+  softwareOther         String?                 @map("software_other")
+  lastEmailedAt         DateTime?               @map("last_emailed_at")
+  lastContactedAt       DateTime?               @map("last_contacted_at")
+  followUpDueAt         DateTime?               @map("follow_up_due_at")
+  lastCommunicationType LeadCommunicationType?  @map("last_communication_type")
+  touchCount            Int                     @default(0) @map("touch_count")
+  nextAction            String?                 @map("next_action")
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  architect    Architect          @relation(fields: [architectUrl], references: [url], onDelete: Cascade)
+  outreachLogs LeadOutreachLog[]
+
+  @@map("leads")
+}
+
+model LeadOutreachLog {
+  id                String                     @id @default(uuid())
+  leadId            String                     @map("lead_id")
+  stageAtLog        LeadStage                  @map("stage_at_log")
+  communicationType LeadCommunicationType      @map("communication_type")
+  direction         LeadCommunicationDirection
+  contactPerson     String?                    @map("contact_person")
+  emailAddress      String?                    @map("email_address")
+  subject           String?
+  messageBody       String?                    @map("message_body")
+  replyReceived     String?                    @map("reply_received")
+  internalNotes     String?                    @map("internal_notes")
+  contactDate       DateTime                   @map("contact_date")
+  followUpDueAt     DateTime?                  @map("follow_up_due_at")
+  nextAction        String?                    @map("next_action")
+  createdAt         DateTime                   @default(now()) @map("created_at")
+  updatedAt         DateTime                   @updatedAt @map("updated_at")
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, contactDate(sort: Desc)])
+  @@map("lead_outreach_logs")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole
+  disabled     Boolean  @default(false)
+  /** UI theme preference — "dark" or "light". */
+  theme        String   @default("dark")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  ownedPlannerBoards PlannerBoard[]       @relation("PlannerBoardOwner")
+  plannerMemberships PlannerBoardMember[]
+  assignedPlannerTasks PlannerTask[]      @relation("PlannerTaskAssignee")
+  plannerTodoItems     PlannerTodoItem[]
+  opsAthleteProfile    OpsAthlete?
+
+  @@map("users")
+}
+
+model PlannerBoard {
+  id           String            @id @default(uuid())
+  title        String
+  scope        PlannerBoardScope
+  kind         PlannerBoardKind  @default(custom)
+  color        String            @default("#6366f1")
+  sortOrder    Int               @default(0) @map("sort_order")
+  ownerId      String            @map("owner_id")
+  /** Athlete workspace boards (inbox, my tasks, project boards, etc.). */
+  athleteId    String?           @map("athlete_id")
+  opsProjectId String?           @map("ops_project_id")
+  isSystem     Boolean           @default(false) @map("is_system")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  owner       User                 @relation("PlannerBoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  athlete     OpsAthlete?          @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  opsProject  OpsProject?          @relation(fields: [opsProjectId], references: [id], onDelete: SetNull)
+  columns     PlannerColumn[]
+  labels      PlannerLabel[]
+  members     PlannerBoardMember[]
+  outboxTasks OpsOutboxTask[]
+
+  @@index([ownerId])
+  @@index([athleteId])
+  @@index([opsProjectId])
+  @@map("planner_boards")
+}
+
+model PlannerBoardMember {
+  id      String            @id @default(uuid())
+  boardId String            @map("board_id")
+  userId  String            @map("user_id")
+  role    PlannerMemberRole @default(editor)
+
+  board PlannerBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([boardId, userId])
+  @@map("planner_board_members")
+}
+
+model PlannerColumn {
+  id              String  @id @default(uuid())
+  boardId         String  @map("board_id")
+  title           String
+  color           String  @default("#64748b")
+  sortOrder       Int     @default(0) @map("sort_order")
+  /** When set, tasks with this approved label auto-move into this column. */
+  linkedLabelName String? @map("linked_label_name")
+
+  board PlannerBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  tasks PlannerTask[]
+
+  @@index([boardId])
+  @@map("planner_columns")
+}
+
+model PlannerLabel {
+  id      String @id @default(uuid())
+  boardId String @map("board_id")
+  name    String
+  color   String
+
+  board     PlannerBoard      @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  taskLinks PlannerTaskLabel[]
+
+  @@index([boardId])
+  @@map("planner_labels")
+}
+
+model PlannerTask {
+  id           String    @id @default(uuid())
+  columnId     String    @map("column_id")
+  title        String
+  summary      String?   @db.Text
+  description  String?   @db.Text
+  sortOrder    Int       @default(0) @map("sort_order")
+  assigneeId   String?  @map("assignee_id")
+  dueAt        DateTime? @map("due_at")
+  architectUrl String?  @map("architect_url")
+  customFields Json?    @map("custom_fields")
+  /** When set, this task row is a duplicate pulled onto a personal board from another planner task. */
+  linkedFromTaskId String? @map("linked_from_task_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  column   PlannerColumn     @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  assignee User?             @relation("PlannerTaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  labels   PlannerTaskLabel[]
+  linkedFromPlannerTask PlannerTask? @relation("PlannerTaskCopies", fields: [linkedFromTaskId], references: [id], onDelete: SetNull)
+  copiedPlannerTasks    PlannerTask[] @relation("PlannerTaskCopies")
+  plannerTodoItems      PlannerTodoItem[]
+
+  @@index([columnId])
+  @@index([assigneeId])
+  @@index([linkedFromTaskId])
+  @@map("planner_tasks")
+}
+
+/** Per-user checklist rows pointing at planner tasks anywhere the user can see. */
+model PlannerTodoItem {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  taskId    String   @map("task_id")
+  sortOrder Int      @default(0) @map("sort_order")
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task PlannerTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, taskId])
+  @@index([userId, completed, sortOrder])
+  @@map("planner_todo_items")
+}
+
+model PlannerTaskLabel {
+  taskId  String @map("task_id")
+  labelId String @map("label_id")
+
+  task  PlannerTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label PlannerLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, labelId])
+  @@map("planner_task_labels")
+}
+
+model OpsClient {
+  id          String          @id @default(uuid())
+  name        String
+  companyName String?         @map("company_name")
+  software    String?         @db.Text
+  phone       String?
+  country     String?
+  logoUrl     String?         @map("logo_url")
+  logoBgColor String?         @map("logo_bg_color")
+  /** Initials text on logo circle when no image: light (white) or dark (black). */
+  logoTextTone String?         @map("logo_text_tone")
+  status      OpsClientStatus @default(active)
+  /** URL slug for public client portal: /clients/{slug} */
+  slug                 String? @unique
+  publicPortalEnabled  Boolean @default(false) @map("public_portal_enabled")
+  notes       String?         @db.Text
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  commercial OpsClientCommercialProfile?
+  contacts   OpsClientContact[]
+  projects   OpsProject[]
+  lineItems  OpsSubmissionLineItem[]
+
+  @@map("ops_clients")
+}
+
+model OpsClientContact {
+  id        String   @id @default(uuid())
+  clientId  String   @map("client_id")
+  name      String
+  email     String?
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  client OpsClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  leadProjects OpsProject[]
+
+  @@index([clientId])
+  @@map("ops_client_contacts")
+}
+
+model OpsClientCommercialProfile {
+  id                 String         @id @default(uuid())
+  clientId           String         @unique @map("client_id")
+  pricingTier        OpsPricingTier @default(tier_30) @map("pricing_tier")
+  /** Athlete share of lane revenue (25–40). */
+  tierPercent        Int            @default(30) @map("tier_percent")
+  laneCostGbp        Decimal        @map("lane_cost_gbp") @db.Decimal(10, 2)
+  overtimeBillingGbp Decimal        @default(20) @map("overtime_billing_gbp") @db.Decimal(10, 2)
+  activeLaneCount    Int            @default(1) @map("active_lane_count")
+  notes              String?        @db.Text
+
+  client OpsClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("ops_client_commercial_profiles")
+}
+
+model OpsAthlete {
+  id               String           @id @default(uuid())
+  userId           String           @unique @map("user_id")
+  fullName         String           @map("full_name")
+  athleteCode      String           @unique @map("athlete_code")
+  email            String?
+  phone            String?
+  dateOfBirth      DateTime?        @map("date_of_birth") @db.Date
+  baseMonthlyPayZar Decimal         @default(20000) @map("base_monthly_pay_zar") @db.Decimal(12, 2)
+  monthlyHourCap   Int              @default(160) @map("monthly_hour_cap")
+  overtimeRateZar  Decimal          @default(200) @map("overtime_rate_zar") @db.Decimal(10, 2)
+  blocharchStartDate DateTime       @map("blocharch_start_date") @db.Date
+  status           OpsAthleteStatus @default(active)
+  /** Direct link to profile photo (http/https or /uploads/…). */
+  profilePhotoUrl      String?          @map("profile_photo_url")
+  profilePhotoBgColor  String?          @map("profile_photo_bg_color")
+  profilePhotoTextTone String?          @map("profile_photo_text_tone")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects     OpsProject[]         @relation("AssignedAthleteProjects")
+  leadProjects OpsProject[]         @relation("ProjectLeadAthlete")
+  submissions  OpsDailySubmission[]
+  plannerBoards PlannerBoard[]
+  outboxTasks  OpsOutboxTask[]      @relation("OutboxTargetAthlete")
+  notifications OpsNotification[]
+  athleteNotifications OpsAthleteNotification[]
+  checkInRequests OpsCheckInRequest[]
+
+  @@map("ops_athletes")
+}
+
+enum OpsAthleteNotificationType {
+  task_assigned
+  check_in_update
+  project_completed
+  admin_message
+}
+
+/** Notifications shown to the athlete in My Notifications. */
+model OpsAthleteNotification {
+  id        String                     @id @default(uuid())
+  athleteId String                     @map("athlete_id")
+  type      OpsAthleteNotificationType
+  title     String
+  message   String?                    @db.Text
+  linkPath  String?                    @map("link_path")
+  readAt    DateTime?                  @map("read_at")
+  createdAt DateTime                   @default(now()) @map("created_at")
+
+  athlete OpsAthlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([athleteId, createdAt])
+  @@map("ops_athlete_notifications")
+}
+
+model OpsProject {
+  id                String              @id @default(uuid())
+  clientId          String              @map("client_id")
+  assignedAthleteId    String?             @map("assigned_athlete_id")
+  /** Client-facing project lead — a contact on this client (shown on client portal). */
+  projectLeadContactId String?             @map("project_lead_contact_id")
+  /** @deprecated Use projectLeadContactId */
+  projectLeadAthleteId String?             @map("project_lead_athlete_id")
+  name              String
+  projectNumber     String              @map("project_number")
+  address           String?             @db.Text
+  latitude          Float?
+  longitude         Float?
+  projectLead       String?             @map("project_lead")
+  complexity        OpsProjectComplexity @default(medium)
+  startDate         DateTime?           @map("start_date") @db.Date
+  dueDate           DateTime?           @map("due_date") @db.Date
+  handoverDate      DateTime?           @map("handover_date") @db.Date
+  currentStage      OpsProjectPhase     @default(survey_conversion) @map("current_stage")
+  currentStatus     OpsProjectStatus    @default(not_started) @map("current_status")
+  /** Latest progress % from daily log (0–100). */
+  progressPercent   Int?                @map("progress_percent")
+  /** Date the project was marked complete (from daily log or handover). */
+  completedAt       DateTime?           @map("completed_at") @db.Date
+  /** Days finished before due date; null if not early or no due date. */
+  deadlineBeatenDays Int?               @map("deadline_beaten_days")
+  notes             String?             @db.Text
+  blockerFlag       Boolean             @default(false) @map("blocker_flag")
+  checkInRequested  Boolean             @default(false) @map("check_in_requested")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  client            OpsClient               @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  assignedAthlete   OpsAthlete?             @relation("AssignedAthleteProjects", fields: [assignedAthleteId], references: [id], onDelete: SetNull)
+  projectLeadContact OpsClientContact?        @relation(fields: [projectLeadContactId], references: [id], onDelete: SetNull)
+  projectLeadAthlete OpsAthlete?            @relation("ProjectLeadAthlete", fields: [projectLeadAthleteId], references: [id], onDelete: SetNull)
+  lineItems       OpsSubmissionLineItem[]
+  plannerBoards   PlannerBoard[]
+  outboxTasks     OpsOutboxTask[]
+  checkInRequests OpsCheckInRequest[]
+
+  @@index([clientId, projectNumber])
+  @@index([assignedAthleteId])
+  @@index([projectLeadContactId])
+  @@index([projectLeadAthleteId])
+  @@map("ops_projects")
+}
+
+enum OpsCheckInStatus {
+  pending
+  approved
+  declined
+  counter_proposed
+  confirmed
+  cancelled
+}
+
+enum OpsNotificationType {
+  check_in_request
+  zoom_check_in
+  review_request
+  blocker
+  project_question
+  completed_task
+  daily_submission_flag
+  birthday
+}
+
+enum OpsOutboxPriority {
+  low
+  normal
+  high
+  urgent
+}
+
+/** Admin Blocharch Outbox assignments → athlete Blocharch Inbox. */
+model OpsOutboxTask {
+  id              String            @id @default(uuid())
+  createdByUserId String            @map("created_by_user_id")
+  athleteId       String            @map("athlete_id")
+  projectId       String?           @map("project_id")
+  title           String?
+  description     String?           @db.Text
+  dueAt           DateTime?         @map("due_at")
+  priority        OpsOutboxPriority @default(normal)
+  labelName       String?           @map("label_name")
+  notes           String?           @db.Text
+  attachments     Json?
+  inboxBoardId    String?           @map("inbox_board_id")
+  inboxTaskId     String?           @map("inbox_task_id")
+  deliveredAt     DateTime?         @map("delivered_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  athlete    OpsAthlete   @relation("OutboxTargetAthlete", fields: [athleteId], references: [id], onDelete: Cascade)
+  project    OpsProject?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  inboxBoard PlannerBoard? @relation(fields: [inboxBoardId], references: [id], onDelete: SetNull)
+
+  @@index([athleteId])
+  @@index([createdByUserId])
+  @@map("ops_outbox_tasks")
+}
+
+/** Admin/manager notification feed (check-ins, blockers, reviews, etc.). */
+model OpsNotification {
+  id          String              @id @default(uuid())
+  athleteId   String?             @map("athlete_id")
+  projectId   String?             @map("project_id")
+  type        OpsNotificationType
+  title       String
+  message     String?             @db.Text
+  actionRequired String?          @map("action_required") @db.Text
+  readAt      DateTime?           @map("read_at")
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  athlete OpsAthlete? @relation(fields: [athleteId], references: [id], onDelete: SetNull)
+
+  @@index([readAt, createdAt])
+  @@index([athleteId])
+  @@map("ops_notifications")
+}
+
+/** Athlete Book a Call → admin Check-In Requests (Google Calendar when configured). */
+model OpsCheckInRequest {
+  id               String           @id @default(uuid())
+  source           String           @default("book_a_call") @map("source")
+  athleteId        String           @map("athlete_id")
+  projectId        String?          @map("project_id")
+  reason           String
+  contextNotes     String?          @map("context_notes") @db.Text
+  requestedStartAt DateTime         @map("requested_start_at")
+  requestedEndAt   DateTime         @map("requested_end_at")
+  status           OpsCheckInStatus @default(pending)
+  adminNote        String?          @map("admin_note") @db.Text
+  counterStartAt   DateTime?        @map("counter_start_at")
+  counterEndAt     DateTime?        @map("counter_end_at")
+  zoomLink         String?          @map("zoom_link")
+  googleEventId    String?          @map("google_event_id")
+  googleEventLink  String?          @map("google_event_link")
+  resolvedByUserId String?          @map("resolved_by_user_id")
+  resolvedAt       DateTime?        @map("resolved_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  athlete OpsAthlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  project OpsProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([athleteId, status])
+  @@index([status, createdAt])
+  @@map("ops_check_in_requests")
+}
+
+model OpsDailySubmission {
+  id               String   @id @default(uuid())
+  athleteId        String   @map("athlete_id")
+  submissionDate   DateTime @map("submission_date") @db.Date
+  wellbeingScore   Int?     @map("wellbeing_score")
+  checkInRequested Boolean  @default(false) @map("check_in_requested")
+  dailyNote        String?  @map("daily_note") @db.Text
+  totalHours       Decimal  @default(0) @map("total_hours") @db.Decimal(6, 2)
+  /** Athlete marked this as a backlogged / late session (exempt from auto-lock). */
+  isBackloggedSession Boolean  @default(false) @map("is_backlogged_session")
+  lockedAt         DateTime? @map("locked_at")
+  /** Set when admin unlocks; prevents auto-lock from re-locking until admin locks again. */
+  adminUnlockedAt  DateTime? @map("admin_unlocked_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  athlete   OpsAthlete              @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  lineItems OpsSubmissionLineItem[]
+
+  @@unique([athleteId, submissionDate])
+  @@index([athleteId, submissionDate])
+  @@map("ops_daily_submissions")
+}
+
+model OpsSubmissionLineItem {
+  id                String           @id @default(uuid())
+  submissionId      String           @map("submission_id")
+  clientId          String           @map("client_id")
+  projectId         String?          @map("project_id")
+  /** Internal client housekeeping — no project progress or client portal visibility. */
+  isHousekeeping    Boolean          @default(false) @map("is_housekeeping")
+  projectPhase      OpsProjectPhase  @map("project_phase")
+  taskType          OpsTaskType      @map("task_type")
+  taskTypes         String[]         @default([]) @map("task_types")
+  hoursWorked       Decimal          @map("hours_worked") @db.Decimal(5, 2)
+  completionPercent Int?             @map("completion_percent")
+  urgencyStatus     OpsUrgencyStatus @default(normal) @map("urgency_status")
+  completedSummary  String?          @map("completed_summary") @db.Text
+  blockerFlag       Boolean          @default(false) @map("blocker_flag")
+  blockerNote       String?          @map("blocker_note") @db.Text
+  notes             String?          @db.Text
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  submission OpsDailySubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  client     OpsClient          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  project    OpsProject?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@index([projectId])
+  @@map("ops_submission_line_items")
+}
+
+model OpsExchangeRate {
+  id             String              @id @default(uuid())
+  effectiveMonth DateTime            @map("effective_month") @db.Date
+  gbpToZarRate   Decimal             @map("gbp_to_zar_rate") @db.Decimal(10, 4)
+  rateType       OpsExchangeRateType @map("rate_type")
+  activeFlag     Boolean             @default(true) @map("active_flag")
+  createdAt      DateTime            @default(now()) @map("created_at")
+
+  @@index([effectiveMonth, rateType, activeFlag])
+  @@map("ops_exchange_rates")
+}
+
+model OpsAppSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("ops_app_settings")
+}

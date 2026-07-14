@@ -1,0 +1,22 @@
+# Run n8n locally for Blocarch workflow
+# Usage: docker compose -f docker-compose.n8n.yml up -d
+
+services:
+  n8n:
+    image: n8nio/n8n
+    container_name: blocarch-n8n
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    environment:
+      - DASHBOARD_URL=http://host.docker.internal:3000
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=changeme
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  n8n_data:
