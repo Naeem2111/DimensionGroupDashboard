@@ -7,9 +7,10 @@ import { randomBytes, scryptSync } from "node:crypto";
 const prisma = new PrismaClient();
 const root = process.cwd();
 
+/** Same format as lib/password.ts — login only accepts scrypt$… */
 function hashPasswordScrypt(plain) {
   const salt = randomBytes(16);
-  const hash = scryptSync(plain, salt, 32, { N: 16384, r: 8, p: 1 });
+  const hash = scryptSync(plain, salt, 32, { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
   return `scrypt$${salt.toString("base64")}$${hash.toString("base64")}`;
 }
 
@@ -23,14 +24,35 @@ function readJsonSafe(filePath, fallback) {
   }
 }
 
-function hashPassword(password) {
-  return crypto.createHash("sha256").update(password).digest("hex");
+const VALID_ROLES = new Set(["admin", "manager", "user"]);
+
+/** Known local/dev accounts (password: changeme for all). */
+const DEFAULT_USERS = [
+  { username: "admin", password: "changeme", role: "admin" },
+  { username: "manager", password: "changeme", role: "manager" },
+  { username: "staff", password: "changeme", role: "user" },
+];
+
+function normalizeRole(role) {
+  const r = String(role || "user").toLowerCase();
+  return VALID_ROLES.has(r) ? r : "user";
+}
+
+function architectsJsonPath() {
+  const fromArg = process.argv.find((a) => a.startsWith("--architects="));
+  if (fromArg) return path.resolve(root, fromArg.slice("--architects=".length));
+  const sample = path.join(root, "data", "architects-sample.json");
+  if (process.argv.includes("--sample") && fs.existsSync(sample)) return sample;
+  return path.join(root, "architects.json");
 }
 
 async function seedArchitects() {
-  const architectsPath = path.join(root, "architects.json");
+  const architectsPath = architectsJsonPath();
   const architects = readJsonSafe(architectsPath, []);
-  if (!Array.isArray(architects) || architects.length === 0) return 0;
+  if (!Array.isArray(architects) || architects.length === 0) {
+    console.warn(`No architects found at ${architectsPath}`);
+    return 0;
+  }
 
   const rows = architects
     .map((item) => {
@@ -48,13 +70,42 @@ async function seedArchitects() {
         yearsActive: item?.years_active ? String(item.years_active) : null,
         staff: item?.staff ? String(item.staff) : null,
         awards: Array.isArray(item?.awards) ? item.awards.map(String) : [],
+        latitude: item?.latitude != null && Number.isFinite(Number(item.latitude)) ? Number(item.latitude) : null,
+        longitude:
+          item?.longitude != null && Number.isFinite(Number(item.longitude)) ? Number(item.longitude) : null,
       };
     })
     .filter(Boolean);
 
   if (rows.length === 0) return 0;
-  await prisma.architect.deleteMany();
-  await prisma.architect.createMany({ data: rows, skipDuplicates: true });
+
+  const replace = process.argv.includes("--replace-architects");
+  if (replace) {
+    await prisma.architect.deleteMany();
+    await prisma.architect.createMany({ data: rows, skipDuplicates: true });
+  } else {
+    for (const row of rows) {
+      await prisma.architect.upsert({
+        where: { url: row.url },
+        create: row,
+        update: {
+          name: row.name,
+          website: row.website,
+          socials: row.socials,
+          email: row.email,
+          address: row.address,
+          contact: row.contact,
+          description: row.description,
+          yearsActive: row.yearsActive,
+          staff: row.staff,
+          awards: row.awards,
+          ...(row.latitude != null ? { latitude: row.latitude } : {}),
+          ...(row.longitude != null ? { longitude: row.longitude } : {}),
+        },
+      });
+    }
+  }
+  console.log(`Architects from ${path.relative(root, architectsPath)}: ${rows.length}`);
   return rows.length;
 }
 
@@ -63,76 +114,134 @@ async function seedLeads() {
   const leads = readJsonSafe(leadsPath, {});
   if (!leads || typeof leads !== "object") return 0;
 
-  const rows = [];
+  let upserted = 0;
   for (const [architectUrl, lead] of Object.entries(leads)) {
     if (!architectUrl || typeof lead !== "object" || !lead) continue;
-    const l = lead;
-    const stage = String(l.stage || "cold");
-    const mappedStage =
-      [
-        "cold",
-        "no_reply",
-        "positive_reply",
-        "follow_up_interested",
-        "negative_reply",
-        "follow_up_not_interested",
-      ].includes(stage)
-        ? stage
-        : "cold";
-    const ratingRaw = Number(l.rating ?? 0);
+    const architect = await prisma.architect.findUnique({ where: { url: architectUrl } });
+    if (!architect) continue;
+
+    const stage = String(lead.stage || "cold");
+    const mappedStage = [
+      "cold",
+      "targeted",
+      "first_email_sent",
+      "follow_up_due",
+      "follow_up_sent",
+      "reply_received",
+      "positive_reply",
+      "interested",
+      "client_onboarded",
+      "negative_reply",
+      "not_interested",
+      "no_reply",
+      "follow_up_interested",
+      "follow_up_not_interested",
+    ].includes(stage)
+      ? stage
+      : "cold";
+    const ratingRaw = Number(lead.rating ?? 0);
     const rating = Number.isFinite(ratingRaw) ? Math.max(0, Math.min(5, Math.round(ratingRaw))) : 0;
     const lastEmailedAt =
-      typeof l.lastEmailedAt === "string" && l.lastEmailedAt.trim() ? new Date(l.lastEmailedAt) : null;
+      typeof lead.lastEmailedAt === "string" && lead.lastEmailedAt.trim()
+        ? new Date(lead.lastEmailedAt)
+        : null;
 
-    rows.push({
-      architectUrl,
-      stage: mappedStage,
-      rating,
-      notes: typeof l.notes === "string" ? l.notes : null,
-      lastEmailedAt,
+    await prisma.lead.upsert({
+      where: { architectUrl },
+      create: {
+        architectUrl,
+        stage: mappedStage,
+        rating,
+        notes: typeof lead.notes === "string" ? lead.notes : null,
+        lastEmailedAt,
+      },
+      update: {
+        stage: mappedStage,
+        rating,
+        notes: typeof lead.notes === "string" ? lead.notes : null,
+        lastEmailedAt,
+      },
     });
+    upserted += 1;
   }
-  if (rows.length === 0) return 0;
-  await prisma.lead.deleteMany();
-  await prisma.lead.createMany({ data: rows, skipDuplicates: true });
-  return rows.length;
+  return upserted;
+}
+
+/** Ensure every practice has a cold lead row. */
+async function seedDefaultLeadsForAllArchitects() {
+  const architects = await prisma.architect.findMany({ select: { url: true } });
+  const existing = new Set(
+    (await prisma.lead.findMany({ select: { architectUrl: true } })).map((r) => r.architectUrl)
+  );
+  const missing = architects
+    .filter((a) => !existing.has(a.url))
+    .map((a) => ({ architectUrl: a.url, stage: "cold", rating: 0 }));
+
+  if (missing.length === 0) return 0;
+  const batch = 500;
+  for (let i = 0; i < missing.length; i += batch) {
+    await prisma.lead.createMany({ data: missing.slice(i, i + batch), skipDuplicates: true });
+  }
+  return missing.length;
 }
 
 async function seedUsers() {
+  let created = 0;
+  let updated = 0;
+
+  // Optional hashed imports from data/users.json (do not wipe existing accounts).
   const usersPath = path.join(root, "data", "users.json");
   const usersData = readJsonSafe(usersPath, { users: [] });
   const users = Array.isArray(usersData?.users) ? usersData.users : [];
 
-  const rows = [];
   for (const user of users) {
     const username = String(user?.username || "").trim().toLowerCase();
-    if (!username) continue;
-    rows.push({
-      id: user?.id ? String(user.id) : crypto.randomUUID(),
-      username,
-      passwordHash: String(user?.passwordHash || ""),
-      role: user?.role === "admin" ? "admin" : "user",
-      disabled: Boolean(user?.disabled),
-      createdAt: user?.createdAt ? new Date(user.createdAt) : new Date(),
-    });
-  }
+    const passwordHash = String(user?.passwordHash || "");
+    if (!username || !passwordHash.startsWith("scrypt$")) continue;
 
-  if (rows.length === 0) {
-    await prisma.user.deleteMany();
+    const existing = await prisma.user.findUnique({ where: { username } });
+    if (existing) continue;
+
     await prisma.user.create({
       data: {
-        username: "admin",
-        passwordHash: hashPassword("changeme"),
-        role: "admin",
-        disabled: false,
+        id: user?.id ? String(user.id) : crypto.randomUUID(),
+        username,
+        passwordHash,
+        role: normalizeRole(user?.role),
+        disabled: Boolean(user?.disabled),
+        createdAt: user?.createdAt ? new Date(user.createdAt) : new Date(),
       },
     });
-    return 1;
+    created += 1;
   }
 
-  await prisma.user.deleteMany();
-  await prisma.user.createMany({ data: rows, skipDuplicates: true });
-  return rows.length;
+  // Always ensure known default accounts (scrypt, login-ready).
+  for (const def of DEFAULT_USERS) {
+    const passwordHash = hashPasswordScrypt(def.password);
+    const existing = await prisma.user.findUnique({ where: { username: def.username } });
+    if (existing) {
+      await prisma.user.update({
+        where: { username: def.username },
+        data: { passwordHash, role: def.role, disabled: false },
+      });
+      updated += 1;
+    } else {
+      await prisma.user.create({
+        data: {
+          username: def.username,
+          passwordHash,
+          role: def.role,
+          disabled: false,
+        },
+      });
+      created += 1;
+    }
+  }
+
+  console.log(
+    `Default logins: admin / changeme, manager / changeme, staff / changeme (created=${created} updated=${updated})`
+  );
+  return created + updated;
 }
 
 async function seedOpsDemo() {
@@ -223,10 +332,14 @@ async function seedOpsDemo() {
 
 async function main() {
   const architects = await seedArchitects();
-  const leads = await seedLeads();
+  const trackedLeads = await seedLeads();
+  const defaultLeads = await seedDefaultLeadsForAllArchitects();
   const users = await seedUsers();
   const ops = await seedOpsDemo();
-  console.log(`Seed complete. architects=${architects} leads=${leads} users=${users} ops=${JSON.stringify(ops)}`);
+  const totalLeads = await prisma.lead.count();
+  console.log(
+    `Seed complete. architects=${architects} trackedLeads=${trackedLeads} defaultColdLeads=${defaultLeads} totalLeads=${totalLeads} users=${users} ops=${JSON.stringify(ops)}`
+  );
 }
 
 main()

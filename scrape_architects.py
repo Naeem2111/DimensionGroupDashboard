@@ -468,21 +468,73 @@ class ArchitectScraper:
 
 def main():
     """Main function to run the scraper."""
-    scraper = ArchitectScraper(delay=1.0)  # 1 second delay between requests
-    
-    # Scrape all architects (you can set max_practices for testing)
-    practices = scraper.scrape_all(include_landscape=True, max_practices=None)
-    
-    # Save to both JSON and CSV
-    scraper.save_to_json(practices, 'architects.json')
-    scraper.save_to_csv(practices, 'architects.csv')
-    
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Scrape architect practices from architectdirectory.co.uk")
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Max number of practice pages to scrape (default: all)",
+    )
+    parser.add_argument(
+        "--out",
+        default="architects.json",
+        help="Output JSON path (default: architects.json)",
+    )
+    parser.add_argument(
+        "--csv",
+        default=None,
+        help="Optional CSV output path (default: same stem as --out with .csv)",
+    )
+    parser.add_argument(
+        "--no-landscape",
+        action="store_true",
+        help="Skip landscape architects listing",
+    )
+    parser.add_argument(
+        "--delay",
+        type=float,
+        default=1.0,
+        help="Seconds between practice page requests (default: 1.0)",
+    )
+    parser.add_argument(
+        "--max-pages",
+        type=int,
+        default=None,
+        help="Max listing pages to crawl when collecting URLs",
+    )
+    args = parser.parse_args()
+
+    scraper = ArchitectScraper(delay=args.delay)
+
+    # Optional: limit listing pages for faster sample scrapes
+    if args.max_pages is not None:
+        original = scraper.get_all_architect_urls
+
+        def limited_urls(url, max_pages=None):
+            return original(url, max_pages=args.max_pages if max_pages is None else max_pages)
+
+        scraper.get_all_architect_urls = limited_urls  # type: ignore[method-assign]
+
+    practices = scraper.scrape_all(
+        include_landscape=not args.no_landscape,
+        max_practices=args.limit,
+    )
+
+    scraper.save_to_json(practices, args.out)
+    csv_path = args.csv
+    if csv_path is None and args.out.endswith(".json"):
+        csv_path = args.out[:-5] + ".csv"
+    if csv_path:
+        scraper.save_to_csv(practices, csv_path)
+
     print(f"\n{'=' * 50}")
     print(f"Scraping complete! Found {len(practices)} practices.")
-    if len(practices) < 2000:
-        print(f"Note: Expected 2000+ records. Check that all listing pages were scraped.")
-    else:
-        print(f"Target of 2000+ records met.")
+    if args.limit is None and len(practices) < 2000:
+        print("Note: Expected 2000+ records. Check that all listing pages were scraped.")
+    elif args.limit is None:
+        print("Target of 2000+ records met.")
     print(f"{'=' * 50}")
 
 
