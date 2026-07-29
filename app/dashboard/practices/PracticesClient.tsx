@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AddPracticeForm } from "@/components/practices/AddPracticeForm";
 import { EditPracticeModal } from "@/components/practices/EditPracticeModal";
 import { getBestAddressFromFields } from "@/lib/address-display";
-import { gmailComposeUrl } from "@/lib/gmail-compose";
+import { mailComposeUrl } from "@/lib/gmail-compose";
 
 interface Architect {
 	url: string;
@@ -321,12 +321,10 @@ export function PracticesClient() {
 																{p.email}
 															</span>
 															<a
-																href={gmailComposeUrl(p.email)}
-																target="_blank"
-																rel="noopener noreferrer"
+																href={mailComposeUrl(p.email)}
 																className="inline-flex w-fit shrink-0 items-center justify-center rounded-lg border border-white/[0.1] bg-white/[0.07] px-3 py-1.5 text-xs font-semibold text-slate-100 ring-1 ring-white/[0.06] transition-colors hover:bg-white/[0.11]"
 															>
-																Gmail
+																Email
 															</a>
 														</div>
 													) : (

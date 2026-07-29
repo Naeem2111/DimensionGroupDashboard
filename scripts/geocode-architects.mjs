@@ -100,7 +100,38 @@ async function nominatimSearch(query, { countrycodes } = {}) {
   return { lat, lng, displayName: first.display_name };
 }
 
-async function geocodeWithFallback(address, practiceName, { postcodeOnly = false } = {}) {
+const COUNTRY_CODES = {
+  "United Kingdom": "gb",
+  Australia: "au",
+  "South Africa": "za",
+  "United Arab Emirates": "ae",
+  "Saudi Arabia": "sa",
+};
+
+async function geocodeWithFallback(address, practiceName, { postcodeOnly = false, country = null } = {}) {
+  const countryCode = COUNTRY_CODES[country] || null;
+  const countryLabel = country || "United Kingdom";
+
+  // Non-UK: try address + country, then name + country (directories often lack UK-style postcodes).
+  if (countryCode && countryCode !== "gb") {
+    const queries = [
+      `${address}, ${countryLabel}`,
+      address,
+      practiceName ? `${practiceName}, ${address}, ${countryLabel}` : null,
+      practiceName ? `${practiceName}, ${countryLabel}` : null,
+    ].filter(Boolean);
+    for (let i = 0; i < queries.length; i++) {
+      let point = await nominatimSearch(queries[i], { countrycodes: countryCode });
+      if (!point) {
+        await sleep(1100);
+        point = await nominatimSearch(queries[i]);
+      }
+      if (point) return point;
+      if (i < queries.length - 1) await sleep(1100);
+    }
+    return null;
+  }
+
   if (postcodeOnly) {
     const pc = primaryUkPostcode(address);
     if (!pc) return null;
@@ -171,6 +202,7 @@ async function main() {
       name: true,
       address: true,
       description: true,
+      country: true,
     },
     orderBy: { name: "asc" },
   });
@@ -183,27 +215,41 @@ async function main() {
     if (limit != null && updated >= limit) break;
 
     const addr = getBestAddressFromFields(row.address, row.description);
-    if (!addr?.trim()) {
+    // Regional leads sometimes only have a name — still try city/country geocode.
+    const queryAddr =
+      addr?.trim() ||
+      (row.country && row.country !== "United Kingdom" ? row.name : null);
+    if (!queryAddr?.trim()) {
       skipped += 1;
       continue;
     }
 
-    const key = normalizeAddress(addr);
+    const key = normalizeAddress(`${queryAddr}|${row.country || ""}`);
     let point = null;
     const cached = key ? geocache[key] : null;
     if (cached?.lat != null && cached?.lng != null) {
       point = { lat: Number(cached.lat), lng: Number(cached.lng), displayName: cached.displayName };
     } else {
-      console.log(`[nominatim] ${row.name.slice(0, 40)}…`);
-      point = await geocodeWithFallback(addr, row.name, { postcodeOnly });
-      if (point && key) {
-        geocache[key] = {
-          lat: point.lat,
-          lng: point.lng,
-          displayName: point.displayName,
-          updatedAt: new Date().toISOString(),
-        };
-        cacheDirty = true;
+      // Also try legacy address-only cache key (UK geocache).
+      const legacyKey = normalizeAddress(queryAddr);
+      const legacy = legacyKey ? geocache[legacyKey] : null;
+      if (legacy?.lat != null && legacy?.lng != null) {
+        point = { lat: Number(legacy.lat), lng: Number(legacy.lng), displayName: legacy.displayName };
+      } else {
+        console.log(`[nominatim] ${row.name.slice(0, 40)}… (${row.country || "UK"})`);
+        point = await geocodeWithFallback(queryAddr, row.name, {
+          postcodeOnly,
+          country: row.country,
+        });
+        if (point && key) {
+          geocache[key] = {
+            lat: point.lat,
+            lng: point.lng,
+            displayName: point.displayName,
+            updatedAt: new Date().toISOString(),
+          };
+          cacheDirty = true;
+        }
       }
     }
 

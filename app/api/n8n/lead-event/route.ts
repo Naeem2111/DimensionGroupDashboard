@@ -113,16 +113,17 @@ async function resolvePracticeUrl(
 }
 
 /**
- * n8n callback after sending an email. Updates notes (timestamped), lastEmailedAt, optional stage.
+ * n8n callback after sending an email via cPanel SMTP. Updates notes (timestamped),
+ * lastEmailedAt, optional stage.
  * POST /api/n8n/lead-event
  * Header: X-Api-Key: N8N_API_KEY (or ?apiKey=)
  *
  * Body JSON:
- * - lead_id?: full architectdirectory practice URL
+ * - lead_id?: full practice URL
  * - email?: practice email
- * - to?: string | array (Gmail-style "Name <a@b.com>" also works)
+ * - to?: string | array (also accepts legacy Gmail-shaped payloads)
  * - appendNote: string (required)
- * - stage?: optional pipeline stage
+ * - stage?: pipeline stage (e.g. first_email_sent, follow_up_sent)
  * - lastEmailedAt?: optional ISO string
  */
 export async function POST(request: NextRequest) {

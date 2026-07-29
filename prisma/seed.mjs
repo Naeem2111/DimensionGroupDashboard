@@ -29,6 +29,8 @@ const VALID_ROLES = new Set(["admin", "manager", "user"]);
 /** Known local/dev accounts (password: changeme for all). */
 const DEFAULT_USERS = [
   { username: "admin", password: "changeme", role: "admin" },
+  { username: "iwilliams", password: "changeme", role: "admin" },
+  { username: "info", password: "changeme", role: "admin" },
   { username: "manager", password: "changeme", role: "manager" },
   { username: "staff", password: "changeme", role: "user" },
 ];
@@ -239,7 +241,7 @@ async function seedUsers() {
   }
 
   console.log(
-    `Default logins: admin / changeme, manager / changeme, staff / changeme (created=${created} updated=${updated})`
+    `Default logins: admin, iwilliams, info, manager, staff / changeme (created=${created} updated=${updated})`
   );
   return created + updated;
 }

@@ -1,113 +1,30 @@
-# n8n Lead Outreach – Visual Flow
+# n8n Lead Outreach – Visual Flow (cPanel SMTP)
 
-**Workflow name:** Dimension Group Lead Outreach – Email Automation
-
----
-
-## Flow diagram (Mermaid)
+**Workflow:** Dimension Group Lead Outreach – cPanel SMTP  
+**Import:** `n8n-lead-outreach-workflow.json`
 
 ```mermaid
 flowchart LR
-    subgraph input[" "]
-        A[Manual Trigger]
-        B[Fetch leads from dashboard]
-        C[Map lead fields]
-    end
-
-    subgraph route["Route by outreach_stage"]
-        S[Switch]
-    end
-
-    subgraph emails["Send email"]
-        E1[Send Cold Email]
-        E2[Send Book Call Email]
-        E3[Send Thank You Email]
-        E4[Send Follow-Up Email]
-    end
-
-    A --> B --> C --> S
-    S -->|cold| E1
-    S -->|positive_reply| E2
-    S -->|follow_up_interested| E2
-    S -->|negative_reply| E3
-    S -->|follow_up_not_interested| E3
-    S -->|no_reply| E4
+  A[ManualTrigger] --> B[FetchLeads]
+  B --> C[MapFields]
+  C --> S[SwitchStage]
+  S -->|cold_targeted| E1[SMTP_Cold]
+  S -->|first_email_follow_due| E4[SMTP_FollowUp]
+  S -->|positive_interested| E2[SMTP_BookCall]
+  S -->|negative_not_interested| E3[SMTP_ThankYou]
+  E1 --> R1[ReportDashboard]
+  E2 --> R2[ReportDashboard]
+  E3 --> R3[ReportDashboard]
+  E4 --> R4[ReportDashboard]
 ```
 
----
+## Stage → email
 
-## Linear view (top to bottom)
+| Switch | SMTP node | Dashboard after send |
+|--------|-----------|----------------------|
+| cold, targeted | Send Cold Email | `first_email_sent` |
+| first_email_sent, follow_up_due | Send Follow-Up | `follow_up_sent` |
+| positive_reply, interested | Send Book Call | note only |
+| negative_reply, not_interested | Send Thank You | note only |
 
-```
-┌─────────────────────────┐
-│   Manual Trigger        │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ Fetch leads from        │
-│ dashboard               │  →  GET {{ DASHBOARD_URL }}/api/n8n/leads
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ Map lead fields         │  →  Normalize: email, firstName, companyName,
-│ (Code)                  │     website, outreach_stage, lead_id, practice_id
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ Route by outreach stage │  (Switch – 6 outputs)
-└─────┬───┬───┬───┬───┬───┘
-      │   │   │   │   │
-      │   │   │   │   └── outreach_stage = "no_reply"
-      │   │   │   │         └─► Send Follow-Up Email
-      │   │   │   │
-      │   │   │   └── outreach_stage = "follow_up_not_interested"
-      │   │   │         └─► Send Thank You Email
-      │   │   │
-      │   │   └── outreach_stage = "negative_reply"
-      │   │         └─► Send Thank You Email
-      │   │
-      │   └── outreach_stage = "positive_reply" OR "follow_up_interested"
-      │         └─► Send Book Call Email
-      │
-      └── outreach_stage = "cold"
-            └─► Send Cold Email
-```
-
----
-
-## Stage → email mapping
-
-| Switch output                      | outreach_stage           | Email node              |
-|-----------------------------------|--------------------------|--------------------------|
-| Cold (first email)                | `cold`                   | Send Cold Email          |
-| Positive reply → Book call        | `positive_reply`        | Send Book Call Email     |
-| Follow-up interested → Book call | `follow_up_interested`  | Send Book Call Email     |
-| Negative reply → Thank you        | `negative_reply`        | Send Thank You Email     |
-| Follow-up not interested → Thank you | `follow_up_not_interested` | Send Thank You Email |
-| No reply → Follow-up              | `no_reply`              | Send Follow-Up Email     |
-
----
-
-## Nodes summary
-
-| Node                    | Type        | Purpose |
-|-------------------------|------------|--------|
-| Manual Trigger          | Trigger    | Start run manually |
-| Fetch leads from dashboard | HTTP Request | GET `/api/n8n/leads` (use `DASHBOARD_URL` env) |
-| Map lead fields         | Code       | Normalize API response to `email`, `firstName`, `companyName`, `website`, `outreach_stage` |
-| Route by outreach stage | Switch     | 6 branches by `outreach_stage` |
-| Send Cold Email         | Gmail (OAuth2) | First contact (Part 1/2 staffing) |
-| Send Book Call Email    | Gmail (OAuth2) | Positive / interested → book call |
-| Send Thank You Email    | Gmail (OAuth2) | Negative / not interested |
-| Send Follow-Up Email    | Gmail (OAuth2) | No reply → follow-up |
-
----
-
-## Env / config
-
-- **DASHBOARD_URL** – Base URL of your dashboard (e.g. `https://yourapp.vercel.app`). Used in “Fetch leads from dashboard”.
-- **FROM_EMAIL** – Sender address (default in workflow: `info@dimensiongroupglobal.com`).
-- **Gmail OAuth2** – Create one Gmail OAuth2 credential (info@dimensiongroupglobal.com) and assign it to all four Send nodes.
+Mail transport: **cPanel SMTP** (`mail.dimensiongroupglobal.com`), not Gmail.

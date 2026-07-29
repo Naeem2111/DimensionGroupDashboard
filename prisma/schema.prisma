@@ -147,6 +147,8 @@ model Architect {
   address     String?
   contact     String?
   phone       String?
+  /** ISO-ish country label for multi-region lead sourcing (e.g. United Kingdom, South Africa). */
+  country     String?
   description String?
   yearsActive String?  @map("years_active")
   staff       String?
@@ -159,6 +161,7 @@ model Architect {
 
   lead Lead?
 
+  @@index([country])
   @@map("architects")
 }
 

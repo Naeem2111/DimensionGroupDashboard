@@ -7,8 +7,9 @@ import json
 import csv
 import time
 import re
+import os
 from urllib.parse import urljoin, urlparse
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Set
 
 BASE_URL = "https://architectdirectory.co.uk"
 ARCHITECTS_URL = f"{BASE_URL}/architects/"
@@ -59,6 +60,44 @@ def _is_social_url(href: str) -> bool:
         return host_normalized in SOCIAL_OR_NON_WEBSITE_HOSTS or host in SOCIAL_OR_NON_WEBSITE_HOSTS
     except Exception:
         return False
+
+def fits_scope(
+    practice: Dict,
+    *,
+    staff_sizes: Optional[set] = None,
+    require_email: bool = False,
+) -> bool:
+    """Return True if practice matches Dimension Group outreach scope (SME + contactable)."""
+    if practice.get("error"):
+        return False
+    if require_email and not (practice.get("email") or "").strip():
+        return False
+    if staff_sizes is not None:
+        staff = " ".join(str(practice.get("staff") or "").split())
+        if staff not in staff_sizes:
+            return False
+    return True
+
+
+def load_skip_urls(paths: List[str]) -> set:
+    """Load practice URLs to skip from JSON files (architects arrays or {url:...} rows)."""
+    skip = set()
+    for path in paths:
+        if not path or not os.path.exists(path):
+            continue
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            continue
+        rows = data if isinstance(data, list) else data.get("practices") or data.get("architects") or []
+        for row in rows:
+            if isinstance(row, dict) and row.get("url"):
+                skip.add(str(row["url"]).rstrip("/"))
+            elif isinstance(row, str) and row.startswith("http"):
+                skip.add(row.rstrip("/"))
+    return skip
+
 
 class ArchitectScraper:
     def __init__(self, delay: float = 1.0):
@@ -385,58 +424,103 @@ class ArchitectScraper:
             print(f"Error scraping {url}: {e}")
             return {'url': url, 'error': str(e)}
     
-    def scrape_all(self, include_landscape: bool = True, max_practices: Optional[int] = None) -> List[Dict]:
+    def scrape_all(
+        self,
+        include_landscape: bool = True,
+        max_practices: Optional[int] = None,
+        skip_urls: Optional[Set[str]] = None,
+        staff_sizes: Optional[Set[str]] = None,
+        require_email: bool = False,
+        target_matches: Optional[int] = None,
+    ) -> List[Dict]:
         """
-        Scrape all architects and optionally landscape architects.
-        
+        Scrape architects and optionally landscape architects.
+
         Args:
             include_landscape: Whether to include landscape architects
-            max_practices: Maximum number of practices to scrape (None for all)
-        
-        Returns:
-            List of practice data dictionaries
+            max_practices: Maximum practice pages to visit (None for all)
+            skip_urls: Practice URLs to skip (already imported)
+            staff_sizes: If set, only keep practices whose staff band is in this set
+            require_email: If True, only keep practices with an email
+            target_matches: Stop once this many in-scope practices are kept
         """
         all_practices = []
-        
-        # Scrape regular architects (all pages)
+        skip = {u.rstrip("/") for u in (skip_urls or set())}
+
         print("=" * 50)
         print("Scraping architects (all pages)...")
         print("=" * 50)
         architect_urls = self.get_all_architect_urls(ARCHITECTS_URL)
         print(f"\nFound {len(architect_urls)} architect practice URLs")
-        
+
         all_urls = list(architect_urls)
-        
+
         if include_landscape:
             print("\n" + "=" * 50)
             print("Scraping landscape architects (all pages)...")
             print("=" * 50)
             landscape_urls = self.get_all_architect_urls(LANDSCAPE_ARCHITECTS_URL)
             print(f"\nFound {len(landscape_urls)} landscape architect practice URLs")
-            # Deduplicate: same practice may appear in both lists
             seen = set(all_urls)
             for u in landscape_urls:
                 if u not in seen:
                     seen.add(u)
                     all_urls.append(u)
             print(f"Combined unique practices: {len(all_urls)}")
-        
-        architect_urls = all_urls
-        total_urls = len(architect_urls)
+
+        # Prefer new URLs first when skipping existing
+        pending = [u for u in all_urls if u.rstrip("/") not in skip]
+        skipped = len(all_urls) - len(pending)
+        if skipped:
+            print(f"Skipping {skipped} URLs already known")
+
         if max_practices:
-            architect_urls = architect_urls[:max_practices]
-            total_urls = len(architect_urls)
-        
+            pending = pending[:max_practices]
+
+        total_urls = len(pending)
+        scope_note = []
+        if staff_sizes:
+            scope_note.append(f"staff in {sorted(staff_sizes)}")
+        if require_email:
+            scope_note.append("require email")
+        if target_matches:
+            scope_note.append(f"stop at {target_matches} matches")
+        scope_str = f" [{'; '.join(scope_note)}]" if scope_note else ""
+
         print(f"\n{'=' * 50}")
-        print(f"Scraping {total_urls} practice pages (target: 2000+)...")
+        print(f"Scraping up to {total_urls} practice pages{scope_str}...")
         print(f"{'=' * 50}\n")
-        
-        for i, url in enumerate(architect_urls, 1):
+
+        visited = 0
+        rejected = 0
+        for i, url in enumerate(pending, 1):
+            if target_matches and len(all_practices) >= target_matches:
+                print(f"\nReached target of {target_matches} in-scope practices.")
+                break
+
             print(f"[{i}/{total_urls}] Scraping: {url}")
             practice_data = self.scrape_practice_page(url)
-            all_practices.append(practice_data)
+            visited += 1
+
+            if fits_scope(practice_data, staff_sizes=staff_sizes, require_email=require_email):
+                all_practices.append(practice_data)
+                staff = practice_data.get("staff") or "?"
+                email = practice_data.get("email") or ""
+                print(f"  + keep ({staff}) {practice_data.get('name')} <{email}>")
+            else:
+                rejected += 1
+                reason = []
+                if require_email and not (practice_data.get("email") or "").strip():
+                    reason.append("no email")
+                if staff_sizes is not None:
+                    staff = " ".join(str(practice_data.get("staff") or "").split())
+                    if staff not in staff_sizes:
+                        reason.append(f"staff={staff or 'blank'}")
+                print(f"  - skip ({', '.join(reason) or 'out of scope'})")
+
             time.sleep(self.delay)
-        
+
+        print(f"\nVisited {visited} pages; kept {len(all_practices)}; rejected {rejected}")
         return all_practices
     
     def save_to_json(self, data: List[Dict], filename: str = 'architects.json'):
@@ -475,7 +559,7 @@ def main():
         "--limit",
         type=int,
         default=None,
-        help="Max number of practice pages to scrape (default: all)",
+        help="Max number of practice pages to visit (default: all)",
     )
     parser.add_argument(
         "--out",
@@ -504,11 +588,47 @@ def main():
         default=None,
         help="Max listing pages to crawl when collecting URLs",
     )
+    parser.add_argument(
+        "--require-email",
+        action="store_true",
+        help="Only keep practices with a contact email",
+    )
+    parser.add_argument(
+        "--staff",
+        default=None,
+        help='Comma-separated staff bands to keep, e.g. "0 - 4,5 - 19" (SME scope)',
+    )
+    parser.add_argument(
+        "--target",
+        type=int,
+        default=None,
+        help="Stop after collecting this many in-scope practices",
+    )
+    parser.add_argument(
+        "--skip-from",
+        action="append",
+        default=[],
+        help="JSON file(s) whose practice URLs should be skipped (repeatable)",
+    )
+    parser.add_argument(
+        "--sme",
+        action="store_true",
+        help="Shortcut: staff 0-4 or 5-19, require email (Dimension Group ICP)",
+    )
     args = parser.parse_args()
+
+    staff_sizes = None
+    require_email = args.require_email
+    if args.sme:
+        staff_sizes = {"0 - 4", "5 - 19"}
+        require_email = True
+    elif args.staff:
+        staff_sizes = {" ".join(part.split()) for part in args.staff.split(",") if part.strip()}
+
+    skip_urls = load_skip_urls(args.skip_from)
 
     scraper = ArchitectScraper(delay=args.delay)
 
-    # Optional: limit listing pages for faster sample scrapes
     if args.max_pages is not None:
         original = scraper.get_all_architect_urls
 
@@ -520,6 +640,10 @@ def main():
     practices = scraper.scrape_all(
         include_landscape=not args.no_landscape,
         max_practices=args.limit,
+        skip_urls=skip_urls,
+        staff_sizes=staff_sizes,
+        require_email=require_email,
+        target_matches=args.target,
     )
 
     scraper.save_to_json(practices, args.out)
@@ -530,11 +654,9 @@ def main():
         scraper.save_to_csv(practices, csv_path)
 
     print(f"\n{'=' * 50}")
-    print(f"Scraping complete! Found {len(practices)} practices.")
-    if args.limit is None and len(practices) < 2000:
+    print(f"Scraping complete! Kept {len(practices)} in-scope practices.")
+    if args.limit is None and not args.sme and args.target is None and len(practices) < 2000:
         print("Note: Expected 2000+ records. Check that all listing pages were scraped.")
-    elif args.limit is None:
-        print("Target of 2000+ records met.")
     print(f"{'=' * 50}")
 
 

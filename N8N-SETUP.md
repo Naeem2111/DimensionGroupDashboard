@@ -1,129 +1,86 @@
-# n8n Local Setup Guide
+# n8n Local Setup Guide (cPanel SMTP)
 
-Run n8n locally and connect it to your Blocarch dashboard.
+Run n8n and connect it to the Dimension Group dashboard. Email sends through **cPanel SMTP**, not Gmail.
 
-## 1. Install n8n
+## 1. Start n8n
 
-### Option A: npx (quickest)
+### Option A: npx
 
 ```bash
 npx n8n
 ```
 
-Opens at http://localhost:5678. No persistence by default.
+Open http://localhost:5678
 
-### Option B: Docker (recommended, with persistence)
-
-```bash
-docker run -d \
-  --name n8n \
-  -p 5678:5678 \
-  -v n8n_data:/home/node/.n8n \
-  -e DASHBOARD_URL=http://host.docker.internal:3000 \
-  -e N8N_BASIC_AUTH_ACTIVE=true \
-  -e N8N_BASIC_AUTH_USER=admin \
-  -e N8N_BASIC_AUTH_PASSWORD=changeme \
-  n8nio/n8n
-```
-
-- `host.docker.internal` lets n8n reach your Next.js app on the host.
-- Replace `3000` if your dashboard runs on another port.
-
-### Option C: Docker Compose
-
-Create `docker-compose.yml` in your project:
-
-```yaml
-services:
-  n8n:
-    image: n8nio/n8n
-    ports:
-      - "5678:5678"
-    volumes:
-      - n8n_data:/home/node/.n8n
-    environment:
-      - DASHBOARD_URL=http://host.docker.internal:3000
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=changeme
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
-volumes:
-  n8n_data:
-```
-
-Run:
+### Option B: Docker Compose (recommended)
 
 ```bash
-docker compose up -d
+npm run n8n:docker
+# or: docker compose -f docker-compose.n8n.yml up -d
 ```
 
-## 2. Configure your dashboard
+Set in compose / env (see `docker-compose.n8n.yml`):
 
-Add to `.env` (create if missing):
+- `DASHBOARD_URL=http://host.docker.internal:3000` (n8n in Docker → Next on host)
+- `N8N_API_KEY` — same secret as the dashboard
+- `FROM_EMAIL=connect@dimensiongroupglobal.com`
+
+## 2. Dashboard `.env`
 
 ```
-N8N_API_KEY=your-secret-key-here
+N8N_API_KEY=generate-a-long-random-secret
+# Optional: webhook if using /api/workflow/trigger
+# N8N_WEBHOOK_URL=https://your-n8n/webhook/xxxx
 ```
 
-Use the same key in n8n when calling the dashboard (see step 4).
+## 3. Import workflow
 
-## 3. Import the workflow
+1. n8n → **Workflows → Import from File**
+2. Choose `n8n-lead-outreach-workflow.json`
 
-1. Open n8n: http://localhost:5678
-2. **Workflows** → **Import from File**
-3. Choose `n8n-lead-outreach-workflow.json` from this folder
-4. Workflow is imported
+## 4. cPanel SMTP credential
 
-## 4. Configure the "Fetch leads from dashboard" node
+**Credentials → Add → SMTP**
 
-1. Open the workflow
-2. Double-click **Fetch leads from dashboard**
-3. Set **URL** to: `={{ $env.DASHBOARD_URL || 'http://localhost:3000' }}/api/n8n/leads`
-4. Add query params:
-   - `status` (optional): `cold`, `no_reply`, `positive_reply`, etc.
-   - `limit` (optional): e.g. `200`
-   - `withEmail`: `true` (default)
+| Setting | Value |
+|---------|--------|
+| Host | `mail.dimensiongroupglobal.com` |
+| Port | `465` |
+| SSL/TLS | Yes |
+| User | `connect@dimensiongroupglobal.com` |
+| Password | From cPanel → Email Accounts |
 
-**Auth:** If you set `N8N_API_KEY` in the dashboard `.env`:
+Assign this credential on all four **Send … (cPanel SMTP)** nodes.
 
-- Add **Header**: `X-Api-Key` = your `N8N_API_KEY` value  
-  **or**
-- Add query param: `apiKey` = your `N8N_API_KEY` value
+If port 465 fails from the n8n host, try port `587` with STARTTLS.
 
-Set **DASHBOARD_URL** in n8n:
+## 5. Fetch leads node
 
-- **Settings** → **Variables** (or `.env` in n8n's folder)
-- `DASHBOARD_URL` = `http://host.docker.internal:3000` (if n8n is in Docker)
-- or `http://localhost:3000` (if n8n and dashboard are on the same machine)
+URL (already in the import):
 
-## 5. Configure SMTP for email nodes
+`{{ ($env.DASHBOARD_URL).replace(/\/$/, '') }}/api/n8n/leads`
 
-Each of the 4 "Send Email" nodes needs SMTP credentials:
+Query params (defaults):
 
-1. **Credentials** → **Add credential** → **SMTP**
-2. Enter your SMTP host, port, user, password
-3. In each email node, select this credential
+- `status=cold,targeted`
+- `limit=25`
+- `withEmail=true`
 
-Alternatively use **Gmail OAuth2** if you prefer.
+Header: `X-Api-Key` = `{{ $env.N8N_API_KEY }}`
 
-## 6. Configure FROM_EMAIL (optional)
+## 6. Run
 
-Set **FROM_EMAIL** in n8n (e.g. `info@dimensiongroupglobal.com`) or it uses the default in the node.
-
-## 7. Run the workflow
-
-1. Start your dashboard: `npm run dev`
-2. Ensure you have leads with `cold` stage and email in `architects.json` + `data/leads.json`
-3. In n8n: **Execute Workflow** (manual trigger)
-4. n8n fetches leads, maps fields, routes by `outreach_stage`, and sends emails
+1. `npm run dev` (or deploy dashboard with matching `N8N_API_KEY`)
+2. In n8n: open workflow → **Execute Workflow**
+3. Confirm a test inbox received mail from connect@
+4. Check dashboard lead notes / stage (`first_email_sent`)
 
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
-| "Unauthorized" from dashboard | Set `N8N_API_KEY` in dashboard `.env` and pass it in the HTTP request |
-| "Connection refused" to localhost | Use `host.docker.internal` when n8n runs in Docker |
-| No leads returned | Add `?status=cold` for cold leads; ensure `architects.json` has records with email |
-| Emails not sending | Check SMTP credentials and FROM_EMAIL in each Send Email node |
+| Unauthorized from dashboard | Match `N8N_API_KEY` on dashboard and n8n env |
+| Connection refused to localhost | Use `host.docker.internal` when n8n is in Docker |
+| SMTP auth failed | Use full email as username + cPanel mailbox password; try 587 STARTTLS |
+| No leads | Ensure practices have email and stage `cold` / `targeted` |
+| Gmail nodes still showing | Re-import this workflow (Gmail was removed) |

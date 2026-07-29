@@ -1,19 +1,24 @@
-# Run n8n locally for Blocarch workflow
+# Run n8n for Dimension Group lead outreach (cPanel SMTP)
 # Usage: docker compose -f docker-compose.n8n.yml up -d
+#
+# Set N8N_API_KEY to the same value as the dashboard .env / Vercel env.
+# Create SMTP credential in n8n UI (mail.dimensiongroupglobal.com:465) — do not put passwords here.
 
 services:
   n8n:
     image: n8nio/n8n
-    container_name: blocarch-n8n
+    container_name: dimension-group-n8n
     ports:
       - "5678:5678"
     volumes:
       - n8n_data:/home/node/.n8n
     environment:
-      - DASHBOARD_URL=http://host.docker.internal:3000
+      - DASHBOARD_URL=${DASHBOARD_URL:-http://host.docker.internal:3000}
+      - N8N_API_KEY=${N8N_API_KEY:-}
+      - FROM_EMAIL=${FROM_EMAIL:-connect@dimensiongroupglobal.com}
       - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=changeme
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-changeme}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped

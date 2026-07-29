@@ -1,82 +1,71 @@
-# n8n Lead Outreach – Email Automation
+# n8n Lead Outreach – cPanel SMTP
 
-This workflow automates the Dimension Group email sequence using your scraped architect data and the templates you provided.
+Automates Dimension Group outreach email using the **cPanel mailbox** (SMTP send). Not Gmail.
+
+Import file: [`n8n-lead-outreach-workflow.json`](n8n-lead-outreach-workflow.json)
 
 ## Flow
 
 ```
-Cold Email (first contact)
-   ├─ Positive Reply     → Book Call Email
-   ├─ Negative Reply     → Thank You Email
-   └─ No Reply           → Follow-Up Email
-         ├─ Interested   → Book Call Email
-         └─ Not Interested → Thank You Email
+Cold / Targeted Email (first contact)
+   ├─ Positive / Interested  → Book Call Email
+   ├─ Negative / Not interested → Thank You Email
+   └─ First email sent / Follow-up due → Follow-Up Email
 ```
 
-Routing is done by **outreach_stage** on each lead. The dashboard API maps pipeline status to stage by default:
+Routing uses `outreach_stage` from `GET /api/n8n/leads`.
 
-| outreach_stage | Email sent        |
-|----------------|-------------------|
-| cold           | First cold email  |
-| no_reply       | Follow-up         |
-| positive_reply / follow_up_interested | Book call |
-| negative_reply / follow_up_not_interested | Thank you |
+| outreach_stage | Email sent |
+|----------------|------------|
+| `cold`, `targeted` | First cold email → then dashboard stage `first_email_sent` |
+| `first_email_sent`, `follow_up_due` | Follow-up → `follow_up_sent` |
+| `positive_reply`, `interested` | Book call |
+| `negative_reply`, `not_interested` | Thank you |
 
-## Import the workflow
+## Import into your n8n instance
 
-1. In n8n: **Workflows** → **Import from File** (or **Import from URL** if you host the JSON).
-2. Select `n8n-lead-outreach-workflow.json` from this folder.
-3. Configure the **Gmail** nodes (all four): create a **Gmail OAuth2** credential for info@dimensiongroupglobal.com and assign it to each Send Cold Email, Send Book Call Email, Send Thank You Email, and Send Follow-Up Email node.
+1. In n8n: **Workflows → Import from File**
+2. Select `n8n-lead-outreach-workflow.json`
+3. Create **one SMTP credential** (cPanel):
 
-## Where leads come from
+| Field | Value |
+|-------|--------|
+| Host | `mail.dimensiongroupglobal.com` |
+| Port | `465` (SSL/TLS) — if blocked try `587` + STARTTLS |
+| User | `connect@dimensiongroupglobal.com` |
+| Password | cPanel email account password |
+| SSL/TLS | On for 465 |
 
-**Option A – From your dashboard (recommended)**  
-The **Fetch leads from dashboard** node calls:
+4. Open each of the four **Send … (cPanel SMTP)** nodes → select that SMTP credential.
+5. Set n8n environment variables (Settings → Variables, or instance env):
 
-- `GET {{ DASHBOARD_URL }}/api/n8n/leads?status=cold&limit=200`
+```
+DASHBOARD_URL=https://your-dashboard-host
+N8N_API_KEY=<same value as dashboard N8N_API_KEY>
+FROM_EMAIL=connect@dimensiongroupglobal.com
+```
 
-Set the env variable **DASHBOARD_URL** in n8n to your deployed app (e.g. `https://yourapp.onrender.com`). No trailing slash.
+6. On the dashboard (Vercel / `.env`), set the same `N8N_API_KEY`.
+7. Run **Manual Trigger** once with `limit=1` or `2` to verify delivery, then use `limit=25`.
 
-- `?status=cold` → only leads that haven’t been contacted (cold email).
-- `?status=no_reply` → for follow-up runs.
-- Omit `status` to get all leads (workflow will route each by its stage).
+Default fetch query on the HTTP node: `status=cold,targeted&limit=25&withEmail=true`.
 
-**Option B – Manual / inject**  
-Replace **Fetch leads from dashboard** with an **Inject** or **Set** node that outputs one item per lead, each with at least:
+For follow-up runs, change `status` to `first_email_sent,follow_up_due`.
 
-- `email`
-- `name` or `practice.name`
-- `contact` or `practice.contact` (used for “First Name”)
-- `outreach_stage`: `cold` | `positive_reply` | `negative_reply` | `no_reply` | `follow_up_interested` | `follow_up_not_interested`
+## After each send
 
-## Template variables
+Report nodes `POST` to `/api/n8n/lead-event` with `X-Api-Key` so the dashboard updates notes + `lastEmailedAt` (and stage for cold/follow-up).
 
-The workflow fills these from each lead:
+## Security
 
-- **{{ firstName }}** – First word of contact name or practice name.
-- **{{ companyName }}** – Practice name.
-- **{{ website }}** / **{{ websiteLink }}** – Practice website, or Dimension Group’s if missing.
+- Do **not** put cPanel passwords or API keys inside the workflow JSON.
+- The bundled workflow uses `{{ $env.N8N_API_KEY }}` only.
 
-Set **FROM_EMAIL** in n8n (e.g. `info@dimensiongroupglobal.com`) or it will use the default in the node.
+## Local n8n (optional)
 
-## Running the workflow
+```bash
+npm run n8n:docker
+# or: npx n8n
+```
 
-1. **Cold run:** Call the API with `?status=cold` (or trigger manually with injected leads). Only leads with an email are returned.
-2. **Follow-up run:** After moving leads to `no_reply` in the dashboard, call with `?status=no_reply` to send follow-ups.
-3. When a lead replies, update their **stage** in the dashboard (e.g. to `positive_reply` or `negative_reply`). On the next run they’ll get the Book Call or Thank You email.
-
-You can run the workflow on a **schedule** (e.g. daily) and filter in the HTTP node by `status` so each run only sends one type of email (e.g. cold today, follow-up tomorrow).
-
-## After each send: update the dashboard (`/api/n8n/lead-event`)
-
-The bundled workflow wires **Report … → dashboard** HTTP nodes after each Gmail send. They `POST` to your app so **notes** get a timestamped line and **last emailed** is updated.
-
-- **URL:** `{{ DASHBOARD_URL }}/api/n8n/lead-event` (same base as fetch; trailing slashes stripped in the expression).
-- **Header:** `X-Api-Key: {{ $env.N8N_API_KEY }}` — must match **`N8N_API_KEY`** on the dashboard (Vercel env).
-- **Body (JSON):**
-  - **`appendNote`** (required) — e.g. `Cold email sent (n8n)`.
-  - **`stage`** (optional) — cold send sets `no_reply` so the pipeline reflects “first email sent”.
-  - **`lead_id`** — full practice URL from the map step (preferred).
-  - **`email`** or **`to`** — fallback if the Gmail node drops `lead_id` (we match the practice by email).
-
-Re-import `n8n-lead-outreach-workflow.json` after pulling, or add equivalent HTTP Request nodes in n8n. On the **Lead nurturing** page you’ll see **Last emailed** and an **Activity** preview; the practice sidebar shows the full **Notes & automation log**.
+See [N8N-SETUP.md](N8N-SETUP.md) for Docker details.
