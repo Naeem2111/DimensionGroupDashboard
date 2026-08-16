@@ -11,19 +11,20 @@
     },
     {
       "parameters": {
-        "url": "={{ ($env.DASHBOARD_URL || 'http://host.docker.internal:3000').replace(/\\/$/, '') }}/api/n8n/leads",
+        "url": "={{ ($env.DASHBOARD_URL || $vars.DASHBOARD_URL || 'https://admin.dimensiongroupglobal.com').toString().replace(/\\/$/, '') }}/api/n8n/leads",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
             { "name": "status", "value": "cold,targeted" },
             { "name": "limit", "value": "25" },
-            { "name": "withEmail", "value": "true" }
+            { "name": "withEmail", "value": "true" },
+            { "name": "apiKey", "value": "={{ $env.N8N_API_KEY || $vars.N8N_API_KEY }}" }
           ]
         },
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "X-Api-Key", "value": "={{ $env.N8N_API_KEY }}" }
+            { "name": "X-Api-Key", "value": "={{ $env.N8N_API_KEY || $vars.N8N_API_KEY }}" }
           ]
         },
         "options": {}
@@ -34,7 +35,7 @@
       "typeVersion": 4.2,
       "position": [440, 360],
       "notesInFlow": true,
-      "notes": "Set n8n env N8N_API_KEY + DASHBOARD_URL. Default: cold/targeted, limit 25. Change status for follow-ups (first_email_sent,follow_up_due)."
+      "notes": "N8N_API_KEY must match Vercel (hex secret, NOT n8n JWT). On n8n Cloud set Variable N8N_API_KEY or paste key into X-Api-Key / apiKey."
     },
     {
       "parameters": {
@@ -277,12 +278,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.DASHBOARD_URL || 'http://host.docker.internal:3000').replace(/\\/$/, '') }}/api/n8n/lead-event",
+        "url": "={{ ($env.DASHBOARD_URL || $vars.DASHBOARD_URL || 'https://admin.dimensiongroupglobal.com').toString().replace(/\\/$/, '') }}/api/n8n/lead-event",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "X-Api-Key", "value": "={{ $env.N8N_API_KEY }}" },
+            { "name": "X-Api-Key", "value": "={{ $env.N8N_API_KEY || $vars.N8N_API_KEY }}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -302,12 +303,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.DASHBOARD_URL || 'http://host.docker.internal:3000').replace(/\\/$/, '') }}/api/n8n/lead-event",
+        "url": "={{ ($env.DASHBOARD_URL || $vars.DASHBOARD_URL || 'https://admin.dimensiongroupglobal.com').toString().replace(/\\/$/, '') }}/api/n8n/lead-event",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "X-Api-Key", "value": "={{ $env.N8N_API_KEY }}" },
+            { "name": "X-Api-Key", "value": "={{ $env.N8N_API_KEY || $vars.N8N_API_KEY }}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -325,12 +326,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.DASHBOARD_URL || 'http://host.docker.internal:3000').replace(/\\/$/, '') }}/api/n8n/lead-event",
+        "url": "={{ ($env.DASHBOARD_URL || $vars.DASHBOARD_URL || 'https://admin.dimensiongroupglobal.com').toString().replace(/\\/$/, '') }}/api/n8n/lead-event",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "X-Api-Key", "value": "={{ $env.N8N_API_KEY }}" },
+            { "name": "X-Api-Key", "value": "={{ $env.N8N_API_KEY || $vars.N8N_API_KEY }}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -348,12 +349,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ ($env.DASHBOARD_URL || 'http://host.docker.internal:3000').replace(/\\/$/, '') }}/api/n8n/lead-event",
+        "url": "={{ ($env.DASHBOARD_URL || $vars.DASHBOARD_URL || 'https://admin.dimensiongroupglobal.com').toString().replace(/\\/$/, '') }}/api/n8n/lead-event",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "X-Api-Key", "value": "={{ $env.N8N_API_KEY }}" },
+            { "name": "X-Api-Key", "value": "={{ $env.N8N_API_KEY || $vars.N8N_API_KEY }}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
