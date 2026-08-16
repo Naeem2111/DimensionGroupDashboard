@@ -7,6 +7,7 @@ import { FollowUpTimeTag } from "@/components/FollowUpTimeTag";
 import { LeadStageTag } from "@/components/LeadStageTag";
 import { LEAD_FILTER_OPTIONS, followUpStatusColor, followUpStatusLabel } from "@/lib/lead-stage-ui";
 import { LeadStagePicker } from "@/components/LeadStagePicker";
+import { ComposeEmailButton } from "@/components/outreach/ComposeEmailButton";
 import { isManualPracticeUrl } from "@/lib/practice-url";
 
 interface LeadItem {
@@ -197,7 +198,9 @@ export function AutomationClient() {
       </div>
 
       <p className="text-sm text-slate-500">
-        Track outreach stages, follow-up dates, and contact history. Open a practice to log emails, replies, and next actions.
+        Track outreach stages, follow-up dates, and contact history. Use{" "}
+        <span className="text-slate-300">Compose email</span> to open your mail app with the Dimension
+        Group template autofilled (subject + body). After sending, click Mark sent to update the pipeline.
       </p>
 
       {loading ? (
@@ -289,12 +292,21 @@ export function AutomationClient() {
                     </td>
                     <td className="px-4 py-3 text-xs tabular-nums text-slate-300">{item.lead.touchCount ?? 0}</td>
                     <td className="px-4 py-3">
-                      <Link
-                        href={`/dashboard/practices/${encodeURIComponent(item.slug)}`}
-                        className="text-sm text-brand-400 hover:text-brand-300"
-                      >
-                        View
-                      </Link>
+                      <div className="flex flex-col items-start gap-2">
+                        {item.email ? (
+                          <ComposeEmailButton
+                            slug={item.slug}
+                            compact
+                            onMarked={() => setRefreshKey((k) => k + 1)}
+                          />
+                        ) : null}
+                        <Link
+                          href={`/dashboard/practices/${encodeURIComponent(item.slug)}`}
+                          className="text-sm text-slate-400 hover:text-brand-300"
+                        >
+                          View
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

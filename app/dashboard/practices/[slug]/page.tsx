@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getBestAddress, loadArchitects } from "@/lib/architects";
-import { mailComposeUrl } from "@/lib/gmail-compose";
 import { isManualPracticeUrl } from "@/lib/practice-url";
 import { LeadStatus } from "@/components/LeadStatus";
 import { LeadOutreachPanel } from "@/components/outreach/LeadOutreachPanel";
+import { ComposeEmailButton } from "@/components/outreach/ComposeEmailButton";
 import { PracticeMap } from "@/components/PracticeMap";
 
 function slugFromUrl(url: string): string {
@@ -63,12 +63,7 @@ export default async function PracticeDetailPage({
               </p>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                 <span className="text-slate-200 break-all">{practice.email}</span>
-                <a
-                  href={mailComposeUrl(practice.email)}
-                  className="inline-flex w-fit shrink-0 items-center justify-center rounded-lg border border-white/[0.1] bg-white/[0.07] px-3 py-1.5 text-sm font-semibold text-slate-100 ring-1 ring-white/[0.06] transition-colors hover:bg-white/[0.11]"
-                >
-                  Open in mail
-                </a>
+                <ComposeEmailButton slug={decoded || slug} label="Compose email" />
               </div>
             </div>
           )}

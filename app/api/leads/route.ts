@@ -9,11 +9,7 @@ import {
 import { COMMUNICATION_TYPE_LABELS } from "@/lib/lead-outreach";
 import { getOrCreateLead, normalizeLeadStage } from "@/lib/leads";
 import { prisma } from "@/lib/prisma";
-
-function slugFromUrl(url: string): string {
-  const m = url.match(/\/practice\/([^/]+)\/?$/);
-  return m ? m[1] : "";
-}
+import { slugFromPracticeUrl } from "@/lib/practice-url";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -48,7 +44,7 @@ export async function GET(request: NextRequest) {
       const lastCommType = dbLead?.lastCommunicationType;
       return {
         ...a,
-        slug: slugFromUrl(a.url),
+        slug: slugFromPracticeUrl(a.url),
         lead: {
           stage,
           effectiveStage,

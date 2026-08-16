@@ -208,6 +208,8 @@ export async function findArchitectBySlugOrUrl(id: string): Promise<Architect | 
         { url: id },
         { url: { endsWith: `/practice/${decoded}` } },
         { url: { endsWith: `/practice/${id}` } },
+        { url: manualPracticeUrl(decoded) },
+        { url: manualPracticeUrl(id) },
       ],
     },
   });

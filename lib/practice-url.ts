@@ -20,7 +20,11 @@ export function manualPracticeUrl(slug: string): string {
 /** Slug from directory or manual practice URLs. */
 export function slugFromPracticeUrl(url: string): string {
   const m = url.match(/\/practice\/([^/]+)\/?$/);
-  return m ? m[1] : "";
+  if (m) return m[1];
+  if (url.startsWith(MANUAL_PRACTICE_URL_PREFIX)) {
+    return url.slice(MANUAL_PRACTICE_URL_PREFIX.length).replace(/\/$/, "");
+  }
+  return "";
 }
 
 export function isManualPracticeUrl(url: string): boolean {

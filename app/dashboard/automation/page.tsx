@@ -6,7 +6,7 @@ export default function AutomationPage() {
     <div className="mx-auto max-w-7xl">
       <PageHeader
         title="Lead nurturing"
-        description="Manual outreach tracking — log emails, follow-ups, and replies. Add practices retroactively with name and email."
+        description="Manual outreach — compose autofilled emails in your mail app, log follow-ups and replies. Add practices with name and email anytime."
       />
       <AutomationClient />
     </div>
