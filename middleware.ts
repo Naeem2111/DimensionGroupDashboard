@@ -24,15 +24,40 @@ export function middleware(request: NextRequest) {
       !path.startsWith("/api/auth/")
     ) {
       const isN8n = path.startsWith("/api/n8n/");
-      const apiKey =
-        request.headers.get("x-api-key") || request.nextUrl.searchParams.get("apiKey");
-      const n8nOk =
-        isN8n &&
-        Boolean(process.env.N8N_API_KEY) &&
-        Boolean(apiKey) &&
-        apiKey === process.env.N8N_API_KEY;
+      if (isN8n) {
+        const expected = process.env.N8N_API_KEY?.trim() || "";
+        const apiKey = (
+          request.headers.get("x-api-key") ||
+          request.nextUrl.searchParams.get("apiKey") ||
+          ""
+        ).trim();
 
-      if (!n8nOk && !hasSessionCookie(request)) {
+        if (!expected) {
+          return NextResponse.json(
+            {
+              error: "Unauthorized",
+              detail:
+                "N8N_API_KEY is not set on the server. Add it in Vercel → Settings → Environment Variables (Production) and redeploy.",
+            },
+            { status: 401 }
+          );
+        }
+
+        if (!apiKey || apiKey !== expected) {
+          return NextResponse.json(
+            {
+              error: "Unauthorized",
+              detail:
+                "X-Api-Key does not match N8N_API_KEY. Use the same shared secret on Vercel and in the n8n header (not an n8n Settings JWT).",
+            },
+            { status: 401 }
+          );
+        }
+
+        return NextResponse.next();
+      }
+
+      if (!hasSessionCookie(request)) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
     }
